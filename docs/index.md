@@ -14,7 +14,7 @@ It is not a cloud service. Any use of the on-device, Apple-bundled language mode
 
 ## Languages
 
-Initially we intend to target Chinese, Japanese, and German. Other languages are likely to follow in subsequent releases.
+Initially we intend to target Chinese, Japanese, German, and French. Other languages are likely to follow in subsequent releases.
 
 Happy learning!
 
