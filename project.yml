@@ -1,0 +1,78 @@
+# XcodeGen spec for Déjà Entendu.
+# Regenerates the SAME "Déjà Entendu.xcodeproj" you already created — this
+# overwrites the stock template's project file, not the source folders
+# (your old ContentView.swift/Item.swift stay on disk but are no longer
+# part of the build since they're not listed under `sources:` below).
+#
+# One-time tool install (Terminal, on your Mac):
+#   brew install xcodegen
+#
+# Then, from this folder:
+#   xcodegen generate
+#   open "Déjà Entendu.xcodeproj"
+#
+# One thing NOT set here: DEVELOPMENT_TEAM. Your existing project didn't
+# have one selected yet, so after generating, open Signing & Capabilities
+# in Xcode for BOTH targets and pick your Team from the dropdown.
+
+name: Déjà Entendu
+
+options:
+  bundleIdPrefix: com.ncubeeight.dejaentendu
+  deploymentTarget:
+    iOS: "26.0"
+  developmentLanguage: en
+
+settingGroups:
+  signing:
+    CODE_SIGN_STYLE: Automatic
+
+targets:
+  Déjà Entendu:
+    type: application
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: App
+    info:
+      path: App/Info.plist
+    entitlements:
+      path: App/DejaEntendu.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ncubeeight.dejaentendu
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        TARGETED_DEVICE_FAMILY: "1"
+      groups: [signing]
+    dependencies:
+      - target: AddToDejaEntendu
+        embed: true
+
+  AddToDejaEntendu:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: ShareExtension
+    info:
+      path: ShareExtension/Info.plist
+    entitlements:
+      path: ShareExtension/AddToDejaEntendu.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ncubeeight.dejaentendu.share
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SKIP_INSTALL: "YES"
+      groups: [signing]
+
+schemes:
+  Déjà Entendu:
+    build:
+      targets:
+        Déjà Entendu: all
+    run:
+      config: Debug
+    archive:
+      config: Release

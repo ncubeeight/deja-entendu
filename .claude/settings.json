@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xcodegen generate*)",
+      "Bash(xcodebuild archive*)",
+      "Bash(xcodebuild -archivePath*)",
+      "Bash(xcodebuild -exportArchive*)"
+    ]
+  }
+}
