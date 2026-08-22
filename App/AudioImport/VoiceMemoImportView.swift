@@ -43,6 +43,13 @@ struct VoiceMemoImportView: View {
                 TranscriptionRunnerView(recording: recording)
             }
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink {
+                        IrohaExplorerView()
+                    } label: {
+                        Label("Call with Mom", systemImage: "character.book.closed")
+                    }
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         isPickerPresented = true

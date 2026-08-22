@@ -26,6 +26,7 @@ options:
 settingGroups:
   signing:
     CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: 9Q3FCK2997
 
 targets:
   Déjà Entendu:
@@ -36,8 +37,21 @@ targets:
       - path: App
     info:
       path: App/Info.plist
+      properties:
+        CFBundleDisplayName: "Déjà Entendu"
+        LSRequiresIPhoneOS: true
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSSpeechRecognitionUsageDescription: "Used to transcribe your Mandarin practice recordings on-device."
+        NSMicrophoneUsageDescription: "Used to record your Mandarin practice sessions."
     entitlements:
       path: App/DejaEntendu.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.ncubeeight.dejaentendu
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ncubeeight.dejaentendu
@@ -57,8 +71,20 @@ targets:
       - path: ShareExtension
     info:
       path: ShareExtension/Info.plist
+      properties:
+        CFBundleDisplayName: "Add to Déjà Entendu"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.share-services
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShareViewController
+          NSExtensionAttributes:
+            NSExtensionActivationRule:
+              NSExtensionActivationSupportsFileWithMaxCount: 1
+              NSExtensionActivationSupportsMovieWithMaxCount: 1
     entitlements:
       path: ShareExtension/AddToDejaEntendu.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.ncubeeight.dejaentendu
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ncubeeight.dejaentendu.share

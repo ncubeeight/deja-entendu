@@ -37,7 +37,7 @@ actor MandarinTranscriber {
 
     // Taiwanese Mandarin: Traditional script, Taiwan region.
     private let requestedLocale = Locale(
-        components: .init(languageCode: .chinese, script: .hanTraditional, region: .taiwan)
+        components: .init(languageCode: .chinese, script: .hanTraditional, languageRegion: .taiwan)
     )
 
     func transcribe(fileAt url: URL) async throws -> TranscriptionResult {
@@ -76,7 +76,7 @@ actor MandarinTranscriber {
         if let lastSample = try await analyzer.analyzeSequence(from: audioFile) {
             try await analyzer.finalizeAndFinish(through: lastSample)
         } else {
-            try await analyzer.finalizeAndFinish(through: nil)
+            try await analyzer.finalizeAndFinishThroughEndOfInput()
         }
 
         try await resultsTask.value
