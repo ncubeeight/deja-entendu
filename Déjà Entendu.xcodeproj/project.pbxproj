@@ -14,9 +14,10 @@
 		395A311BB2EA35B39E0A324B /* IrohaExplorerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4097CB9BABDA7CDC95A8A86C /* IrohaExplorerView.swift */; };
 		3BC4CF7590E896B632A76A3F /* VoiceMemoImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD7B99A4550DA8621703186A /* VoiceMemoImportView.swift */; };
 		4A9D006ABCFD3DA1463D0AF2 /* StudyNoteGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31C9B7C7306890A74F4BEA9D /* StudyNoteGenerator.swift */; };
+		60BED0A232FDDCD645DE9000 /* SupportedLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B853B1C7C82C455A6977DCE /* SupportedLanguage.swift */; };
 		63673C8FAC2E483D6726F630 /* ImportedRecording.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9097D3B807C2021D8C5C6E0D /* ImportedRecording.swift */; };
-		662B604C39E30F1FAEBAD744 /* MandarinTranscriber.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29E57E34223750EA893829B8 /* MandarinTranscriber.swift */; };
 		75CCB407447E900359D8053E /* PinyinConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 545CED820912E84C60D93AEA /* PinyinConverter.swift */; };
+		77797AD12F21257B3216CC57 /* SpeechTranscriberService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E654C219D0CE7AF3C28A4DB /* SpeechTranscriberService.swift */; };
 		8BF0D6D13DE6DE67344DBB05 /* DejaEntenduApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B99D0191D8A4292C6A7D00F /* DejaEntenduApp.swift */; };
 		ABEDF272E91FA658B66645D2 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01BDDE5661401078A20C46D7 /* ShareViewController.swift */; };
 		E83036AEB3873C15437896BC /* AudioTranscoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4436C189F27EDA7AD4F93AFB /* AudioTranscoder.swift */; };
@@ -50,12 +51,13 @@
 
 /* Begin PBXFileReference section */
 		01BDDE5661401078A20C46D7 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
-		29E57E34223750EA893829B8 /* MandarinTranscriber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MandarinTranscriber.swift; sourceTree = "<group>"; };
+		2E654C219D0CE7AF3C28A4DB /* SpeechTranscriberService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechTranscriberService.swift; sourceTree = "<group>"; };
 		31C9B7C7306890A74F4BEA9D /* StudyNoteGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyNoteGenerator.swift; sourceTree = "<group>"; };
 		36497FF3E478215B6B0196F9 /* WordGlossGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordGlossGenerator.swift; sourceTree = "<group>"; };
 		3B99D0191D8A4292C6A7D00F /* DejaEntenduApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DejaEntenduApp.swift; sourceTree = "<group>"; };
 		4097CB9BABDA7CDC95A8A86C /* IrohaExplorerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IrohaExplorerView.swift; sourceTree = "<group>"; };
 		4436C189F27EDA7AD4F93AFB /* AudioTranscoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioTranscoder.swift; sourceTree = "<group>"; };
+		4B853B1C7C82C455A6977DCE /* SupportedLanguage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedLanguage.swift; sourceTree = "<group>"; };
 		545CED820912E84C60D93AEA /* PinyinConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinyinConverter.swift; sourceTree = "<group>"; };
 		5B5932862BBCA2002043D148 /* DejaEntendu.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DejaEntendu.entitlements; sourceTree = "<group>"; };
 		5D7C91F03475E5BE03BD8EC2 /* AddToDejaEntendu.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = AddToDejaEntendu.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -96,7 +98,8 @@
 			isa = PBXGroup;
 			children = (
 				4436C189F27EDA7AD4F93AFB /* AudioTranscoder.swift */,
-				29E57E34223750EA893829B8 /* MandarinTranscriber.swift */,
+				2E654C219D0CE7AF3C28A4DB /* SpeechTranscriberService.swift */,
+				4B853B1C7C82C455A6977DCE /* SupportedLanguage.swift */,
 			);
 			path = Transcription;
 			sourceTree = "<group>";
@@ -254,10 +257,11 @@
 				8BF0D6D13DE6DE67344DBB05 /* DejaEntenduApp.swift in Sources */,
 				63673C8FAC2E483D6726F630 /* ImportedRecording.swift in Sources */,
 				395A311BB2EA35B39E0A324B /* IrohaExplorerView.swift in Sources */,
-				662B604C39E30F1FAEBAD744 /* MandarinTranscriber.swift in Sources */,
 				75CCB407447E900359D8053E /* PinyinConverter.swift in Sources */,
 				F9A9E6B14BAFDA3DDB9061C3 /* SharedContainer.swift in Sources */,
+				77797AD12F21257B3216CC57 /* SpeechTranscriberService.swift in Sources */,
 				4A9D006ABCFD3DA1463D0AF2 /* StudyNoteGenerator.swift in Sources */,
+				60BED0A232FDDCD645DE9000 /* SupportedLanguage.swift in Sources */,
 				2C4760BA986A0BDD263AC21E /* TranscriptionRunnerView.swift in Sources */,
 				3BC4CF7590E896B632A76A3F /* VoiceMemoImportView.swift in Sources */,
 				F6CAFEF06BA6318E3BC9C464 /* WordGlossGenerator.swift in Sources */,

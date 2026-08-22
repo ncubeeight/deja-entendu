@@ -9,7 +9,7 @@ struct StudyNotes {
     @Guide(description: "Natural English translation of the transcript, 1-2 sentences.")
     var englishTranslation: String
 
-    @Guide(description: "Up to 5 notable vocabulary words from the transcript, in Traditional Chinese.", .maximumCount(5))
+    @Guide(description: "Up to 5 notable vocabulary words or phrases from the transcript, written in their original script.", .maximumCount(5))
     var keyVocabulary: [String]
 
     @Guide(description: "One short, encouraging note about grammar or phrasing, max 2 sentences.")
@@ -29,7 +29,7 @@ enum StudyNoteError: LocalizedError {
 
 enum StudyNoteGenerator {
 
-    static func generateNotes(forTranscript transcript: String) async throws -> StudyNotes {
+    static func generateNotes(forTranscript transcript: String, language: SupportedLanguage) async throws -> StudyNotes {
         let model = SystemLanguageModel.default
 
         switch model.availability {
@@ -44,9 +44,9 @@ enum StudyNoteGenerator {
         let session = LanguageModelSession(
             model: model,
             instructions: """
-            You help a student studying Taiwanese Mandarin (Traditional characters, \
-            Taiwan usage). Given a transcript of their spoken practice, translate it \
-            and give brief, encouraging feedback. Keep responses short.
+            You help a student studying \(language.displayName). Given a transcript of \
+            their spoken practice, translate it and give brief, encouraging feedback. \
+            Keep responses short.
             """
         )
 

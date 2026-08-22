@@ -3,16 +3,16 @@ import Speech
 import AVFoundation
 
 enum TranscriptionError: LocalizedError {
-    case localeNotSupported
-    case assetInstallFailed(String)
+    case localeNotSupported(SupportedLanguage)
+    case assetInstallFailed(SupportedLanguage, String)
     case noResult
 
     var errorDescription: String? {
         switch self {
-        case .localeNotSupported:
-            return "Taiwanese Mandarin isn't available for on-device transcription on this device/OS version."
-        case .assetInstallFailed(let reason):
-            return "Couldn't install the Mandarin speech model: \(reason)"
+        case .localeNotSupported(let language):
+            return "\(language.displayName) isn't available for on-device transcription on this device/OS version."
+        case .assetInstallFailed(let language, let reason):
+            return "Couldn't install the \(language.displayName) speech model: \(reason)"
         case .noResult:
             return "Transcription produced no result."
         }
@@ -29,27 +29,26 @@ struct TranscriptionResult {
     let segments: [TranscriptSegment]
 }
 
-/// Wraps SpeechAnalyzer/SpeechTranscriber configured specifically for
-/// Taiwanese Mandarin (zh-Hant, Taiwan region), and works identically
-/// whether the file was just recorded live or imported from Voice Memos —
-/// both cases end up as a plain file URL by the time this runs.
-actor MandarinTranscriber {
+/// Wraps SpeechAnalyzer/SpeechTranscriber for a caller-supplied language —
+/// works identically whether the file was just recorded live or imported
+/// from Voice Memos, both cases end up as a plain file URL by the time this runs.
+actor SpeechTranscriberService {
+    private let language: SupportedLanguage
 
-    // Taiwanese Mandarin: Traditional script, Taiwan region.
-    private let requestedLocale = Locale(
-        components: .init(languageCode: .chinese, script: .hanTraditional, languageRegion: .taiwan)
-    )
+    init(language: SupportedLanguage) {
+        self.language = language
+    }
 
     func transcribe(fileAt url: URL) async throws -> TranscriptionResult {
         // 1. Resolve to a locale SpeechTranscriber actually supports (falls
-        //    back gracefully if e.g. only a broader zh-Hant variant is available).
-        guard let resolvedLocale = await SpeechTranscriber.supportedLocale(equivalentTo: requestedLocale) else {
-            throw TranscriptionError.localeNotSupported
+        //    back gracefully if e.g. only a broader locale variant is available).
+        guard let resolvedLocale = await SpeechTranscriber.supportedLocale(equivalentTo: language.locale) else {
+            throw TranscriptionError.localeNotSupported(language)
         }
 
         let transcriber = SpeechTranscriber(locale: resolvedLocale, preset: .transcription)
 
-        // 2. Make sure the on-device model assets for zh-Hant-TW are present.
+        // 2. Make sure the on-device model assets for this locale are present.
         //    This may trigger a one-time network download; recognition itself
         //    runs fully on-device once assets are installed.
         try await ensureAssetsInstalled(for: transcriber)
@@ -94,7 +93,7 @@ actor MandarinTranscriber {
             }
             // If the request comes back nil, assets are already installed.
         } catch {
-            throw TranscriptionError.assetInstallFailed(error.localizedDescription)
+            throw TranscriptionError.assetInstallFailed(language, error.localizedDescription)
         }
     }
 }
