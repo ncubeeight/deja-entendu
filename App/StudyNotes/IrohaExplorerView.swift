@@ -31,6 +31,12 @@ struct IrohaExplorerView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                Text("Select a word to see the translation from your device's built-in language model")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+
                 ForEach(Array(lines.enumerated()), id: \.offset) { row, words in
                     HStack(spacing: 0) {
                         ForEach(Array(words.enumerated()), id: \.offset) { col, word in
@@ -45,7 +51,7 @@ struct IrohaExplorerView: View {
             }
             .padding(.vertical, 32)
         }
-        .navigationTitle("Call with Mom")
+        .navigationTitle("Example interaction")
         .navigationBarTitleDisplayMode(.inline)
     }
 

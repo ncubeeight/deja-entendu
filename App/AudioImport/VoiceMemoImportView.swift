@@ -57,7 +57,7 @@ struct VoiceMemoImportView: View {
                     NavigationLink {
                         IrohaExplorerView()
                     } label: {
-                        Label("Call with Mom", systemImage: "character.book.closed")
+                        Label("Example interaction", systemImage: "character.book.closed")
                     }
                 }
                 ToolbarItem(placement: .primaryAction) {
