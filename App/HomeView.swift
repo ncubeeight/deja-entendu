@@ -13,7 +13,7 @@ struct HomeView: View {
                 .tag(0)
 
             VoiceMemoImportView()
-                .tabItem { Label("Recordings", systemImage: "waveform") }
+                .tabItem { Label("Audio Samples", systemImage: "waveform") }
                 .tag(1)
 
             NavigationStack {

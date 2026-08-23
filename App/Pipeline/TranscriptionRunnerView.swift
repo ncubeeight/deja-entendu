@@ -57,7 +57,25 @@ struct TranscriptionRunnerView: View {
     private func transcriptBlock(result: TranscriptionResult) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Transcript").font(.headline)
-            Text(result.fullText)
+            Text("Tap a word to add it to your Vocabulary list.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            VStack(alignment: .leading, spacing: 14) {
+                ForEach(
+                    Array(TextSegmentation.sentences(in: result.fullText, language: recording.language.nlLanguage).enumerated()),
+                    id: \.offset
+                ) { _, sentence in
+                    FlowLayout(spacing: 4) {
+                        ForEach(
+                            Array(TextSegmentation.words(in: sentence, language: recording.language.nlLanguage).enumerated()),
+                            id: \.offset
+                        ) { _, word in
+                            TranscriptWordToken(word: word)
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -93,5 +111,60 @@ struct TranscriptionRunnerView: View {
         } catch {
             status = .failed(error.localizedDescription)
         }
+    }
+}
+
+private struct TranscriptWordToken: View {
+    let word: String
+
+    @State private var isSelected = false
+    @State private var didAdd = false
+
+    var body: some View {
+        Text(word)
+            .padding(.horizontal, 3)
+            .padding(.vertical, 1)
+            .background(
+                isSelected ? Color.accentColor.opacity(0.22) : .clear,
+                in: RoundedRectangle(cornerRadius: 5)
+            )
+            .contentShape(Rectangle())
+            .onTapGesture {
+                isSelected = true
+            }
+            .popover(isPresented: $isSelected, arrowEdge: .top) {
+                popoverContent
+                    .presentationCompactAdaptation(.popover)
+                    .onDisappear { didAdd = false }
+            }
+    }
+
+    @ViewBuilder
+    private var popoverContent: some View {
+        VStack(spacing: 10) {
+            Text(word).font(.headline)
+
+            if didAdd {
+                Label("Added to Vocabulary", systemImage: "checkmark.circle.fill")
+                    .font(.subheadline)
+                    .foregroundStyle(.green)
+            } else {
+                Button {
+                    addToVocabulary()
+                } label: {
+                    Label("Add to Vocabulary", systemImage: "text.book.closed")
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding()
+        .frame(minWidth: 220)
+    }
+
+    private func addToVocabulary() {
+        var entries = VocabularyStore.load()
+        entries.insert(VocabularyEntry(id: UUID(), text: word, addedAt: .now), at: 0)
+        VocabularyStore.save(entries)
+        didAdd = true
     }
 }

@@ -48,6 +48,10 @@ struct IrohaExplorerView: View {
                         }
                     }
                 }
+
+                Link("Japanese Iroha poem", destination: URL(string: "https://en.wikipedia.org/wiki/Iroha")!)
+                    .font(.footnote)
+                    .padding(.top, 12)
             }
             .padding(.vertical, 32)
         }

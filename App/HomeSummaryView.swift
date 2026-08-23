@@ -13,6 +13,7 @@ struct HomeSummaryView: View {
     @Binding var selectedTab: Int
 
     @State private var vocabulary: [VocabularyEntry] = VocabularyStore.load()
+    @State private var recordings: [ImportedRecording] = ImportedRecordingStore.load()
     @State private var isAddActionSheetPresented = false
     @State private var isAddWordSheetPresented = false
 
@@ -36,20 +37,36 @@ struct HomeSummaryView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 28) {
-                    Text("You heard it before. Let's try to remember it.")
-                        .font(.subheadline)
-                        .italic()
-                        .foregroundStyle(AppTheme.inkSoft)
+                VStack(spacing: 28) {
+                    titleBanner
 
-                    continueListeningSection
-                    wordsToReviewSection
+                    VStack(alignment: .leading, spacing: 28) {
+                        continueListeningSection
+                        wordsToReviewSection
+                    }
+                    .padding(.horizontal, 20)
                 }
-                .padding(20)
+                .padding(.bottom, 20)
             }
             .background(AppTheme.background)
-            .navigationTitle("Déjà Entendu")
-            .task { vocabulary = VocabularyStore.load() }
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationDestination(for: ImportedRecording.self) { recording in
+                TranscriptionRunnerView(recording: recording)
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink {
+                        IrohaExplorerView()
+                    } label: {
+                        Label("Example interaction", systemImage: "character.book.closed")
+                    }
+                }
+            }
+            .task {
+                vocabulary = VocabularyStore.load()
+                recordings = ImportedRecordingStore.load()
+            }
             .confirmationDialog("Add to Déjà Entendu", isPresented: $isAddActionSheetPresented, titleVisibility: .visible) {
                 Button("Import a Recording") { selectedTab = 1 }
                 Button("Add a Word") { isAddWordSheetPresented = true }
@@ -64,6 +81,29 @@ struct HomeSummaryView: View {
     }
 
     @ViewBuilder
+    private var titleBanner: some View {
+        VStack(spacing: 10) {
+            Text("Déjà Entendu")
+                .font(.system(size: 34, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+            Text("You heard it before.\nLet's try to remember it.")
+                .font(.subheadline)
+                .foregroundStyle(.white.opacity(0.85))
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 40)
+        .padding(.horizontal, 20)
+        .background(
+            LinearGradient(
+                colors: [AppTheme.headerGradientStart, AppTheme.headerGradientEnd],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+    }
+
+    @ViewBuilder
     private var continueListeningSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Continue listening")
@@ -71,19 +111,41 @@ struct HomeSummaryView: View {
                 .fontDesign(.rounded)
                 .foregroundStyle(AppTheme.ink)
 
-            // Recordings live only in VoiceMemoImportView's in-memory
-            // @State right now — nothing persists them, so Home has no
-            // independent source to read from yet. Showing the honest
-            // empty state rather than a fake list; wiring this up for
-            // real means giving ImportedRecording a persisted store the
-            // way VocabularyStore already does for vocabulary.
-            Text("Recordings you import will show up here once they're saved between launches.")
-                .font(.subheadline)
-                .foregroundStyle(AppTheme.inkSoft)
-                .padding(16)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: 18))
-                .overlay(RoundedRectangle(cornerRadius: 18).stroke(AppTheme.line))
+            if recordings.isEmpty {
+                Text("Recordings you import will show up here once they're saved between launches.")
+                    .font(.subheadline)
+                    .foregroundStyle(AppTheme.inkSoft)
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: 18))
+                    .overlay(RoundedRectangle(cornerRadius: 18).stroke(AppTheme.line))
+            } else {
+                VStack(spacing: 10) {
+                    ForEach(recordings.prefix(3)) { recording in
+                        NavigationLink(value: recording) {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(recording.originalFilename)
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(AppTheme.ink)
+                                        .lineLimit(1)
+                                    Text("\(recording.language.displayName) · \(recording.importedAt.formatted(date: .abbreviated, time: .shortened))")
+                                        .font(.caption)
+                                        .foregroundStyle(AppTheme.inkSoft)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundStyle(AppTheme.inkSoft)
+                            }
+                            .padding(16)
+                            .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: 18))
+                            .overlay(RoundedRectangle(cornerRadius: 18).stroke(AppTheme.line))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
         }
     }
 

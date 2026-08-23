@@ -9,7 +9,7 @@ struct VoiceMemoImportView: View {
     @State private var isLanguageSheetPresented = false
     @State private var pendingLanguage: SupportedLanguage = .chineseTraditional
     @State private var pendingShareExtensionFiles: [URL] = []
-    @State private var importedRecordings: [ImportedRecording] = []
+    @State private var importedRecordings: [ImportedRecording] = ImportedRecordingStore.load()
     @State private var importError: String?
 
     @AppStorage(AppSettings.enabledLanguagesKey) private var enabledLanguagesRaw: String = ""
@@ -48,18 +48,11 @@ struct VoiceMemoImportView: View {
                     }
                 }
             }
-            .navigationTitle("Recordings")
+            .navigationTitle("Audio Samples")
             .navigationDestination(for: ImportedRecording.self) { recording in
                 TranscriptionRunnerView(recording: recording)
             }
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    NavigationLink {
-                        IrohaExplorerView()
-                    } label: {
-                        Label("Example interaction", systemImage: "character.book.closed")
-                    }
-                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         pendingShareExtensionFiles = []
@@ -94,6 +87,9 @@ struct VoiceMemoImportView: View {
             }, message: {
                 Text(importError ?? "")
             })
+            .onChange(of: importedRecordings) { _, newValue in
+                ImportedRecordingStore.save(newValue)
+            }
         }
     }
 

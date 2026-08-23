@@ -1,4 +1,5 @@
 import Foundation
+import NaturalLanguage
 
 /// Languages the transcription pipeline can detect and transcribe. Adding a
 /// new language means adding a case here — everything else (the picker,
@@ -22,6 +23,19 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
             Locale(identifier: "de-DE")
         case .french:
             Locale(identifier: "fr-FR")
+        }
+    }
+
+    /// For NLTokenizer — telling it the language up front gives more
+    /// reliable word/sentence segmentation than auto-detection, especially
+    /// for Chinese/Japanese where there's no whitespace to fall back on.
+    var nlLanguage: NLLanguage {
+        switch self {
+        case .chineseTraditional: .traditionalChinese
+        case .chineseSimplified: .simplifiedChinese
+        case .japanese: .japanese
+        case .german: .german
+        case .french: .french
         }
     }
 

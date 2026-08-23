@@ -15,6 +15,11 @@ enum AppTheme {
     static let coralSoft = Color(hex: 0xFFE4DA)
     static let teal = Color(hex: 0x2BBAA3)
     static let tealSoft = Color(hex: 0xDFF6F1)
+
+    // Matches the blue-green header gradient on the GitHub Pages site
+    // (jekyll-theme-cayman's .page-header: linear-gradient(120deg, #155799, #159957)).
+    static let headerGradientStart = Color(hex: 0x155799)
+    static let headerGradientEnd = Color(hex: 0x159957)
 }
 
 private extension Color {
