@@ -53,6 +53,13 @@ struct VoiceMemoImportView: View {
                         Label("Call with Mom", systemImage: "character.book.closed")
                     }
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink {
+                        VocabularyListView()
+                    } label: {
+                        Label("Vocabulary", systemImage: "text.book.closed")
+                    }
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         pendingShareExtensionFiles = []

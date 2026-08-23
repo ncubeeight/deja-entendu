@@ -50,4 +50,35 @@ enum SharedContainer {
         }
         return results
     }
+
+    private static func vocabularyInboxDirectory() -> URL? {
+        guard let container = FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: appGroupID) else {
+            return nil
+        }
+        let inbox = container.appendingPathComponent("VocabularyInbox", isDirectory: true)
+        try? FileManager.default.createDirectory(at: inbox, withIntermediateDirectories: true)
+        return inbox
+    }
+
+    /// Reads any plain-text terms the Share Extension dropped off (e.g. from
+    /// Translate), then clears them from the inbox. Unlike audio imports,
+    /// vocabulary terms don't need a language chosen up front, so this
+    /// drains straight into the result — no separate commit step.
+    static func drainPendingVocabularyTexts() -> [String] {
+        guard let inbox = vocabularyInboxDirectory() else { return [] }
+        let files = (try? FileManager.default.contentsOfDirectory(
+            at: inbox, includingPropertiesForKeys: nil
+        )) ?? []
+
+        var texts: [String] = []
+        for fileURL in files {
+            if let text = try? String(contentsOf: fileURL, encoding: .utf8),
+               !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                texts.append(text)
+            }
+            try? FileManager.default.removeItem(at: fileURL)
+        }
+        return texts
+    }
 }

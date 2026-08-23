@@ -13,12 +13,15 @@
 		32C35E55ABA9DA1280FED30B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B50FE10824FC85FD864D8317 /* Assets.xcassets */; };
 		395A311BB2EA35B39E0A324B /* IrohaExplorerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4097CB9BABDA7CDC95A8A86C /* IrohaExplorerView.swift */; };
 		3BC4CF7590E896B632A76A3F /* VoiceMemoImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD7B99A4550DA8621703186A /* VoiceMemoImportView.swift */; };
+		4747BB10B262695C49AF849D /* VocabularyEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241C2FC09591C0730AA0EF55 /* VocabularyEntry.swift */; };
+		48D40D6016A289D197A8544F /* VocabularyListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0909CDAE2AEC3B3672066AA3 /* VocabularyListView.swift */; };
 		4A9D006ABCFD3DA1463D0AF2 /* StudyNoteGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31C9B7C7306890A74F4BEA9D /* StudyNoteGenerator.swift */; };
 		60BED0A232FDDCD645DE9000 /* SupportedLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B853B1C7C82C455A6977DCE /* SupportedLanguage.swift */; };
 		63673C8FAC2E483D6726F630 /* ImportedRecording.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9097D3B807C2021D8C5C6E0D /* ImportedRecording.swift */; };
 		75CCB407447E900359D8053E /* PinyinConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 545CED820912E84C60D93AEA /* PinyinConverter.swift */; };
 		77797AD12F21257B3216CC57 /* SpeechTranscriberService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E654C219D0CE7AF3C28A4DB /* SpeechTranscriberService.swift */; };
 		8BF0D6D13DE6DE67344DBB05 /* DejaEntenduApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B99D0191D8A4292C6A7D00F /* DejaEntenduApp.swift */; };
+		A072511B809A6011E9CE02DE /* VocabularyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1497FE23ADF47C5FBBE22EC2 /* VocabularyStore.swift */; };
 		ABEDF272E91FA658B66645D2 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01BDDE5661401078A20C46D7 /* ShareViewController.swift */; };
 		E83036AEB3873C15437896BC /* AudioTranscoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4436C189F27EDA7AD4F93AFB /* AudioTranscoder.swift */; };
 		F6CAFEF06BA6318E3BC9C464 /* WordGlossGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36497FF3E478215B6B0196F9 /* WordGlossGenerator.swift */; };
@@ -51,6 +54,9 @@
 
 /* Begin PBXFileReference section */
 		01BDDE5661401078A20C46D7 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
+		0909CDAE2AEC3B3672066AA3 /* VocabularyListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabularyListView.swift; sourceTree = "<group>"; };
+		1497FE23ADF47C5FBBE22EC2 /* VocabularyStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabularyStore.swift; sourceTree = "<group>"; };
+		241C2FC09591C0730AA0EF55 /* VocabularyEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabularyEntry.swift; sourceTree = "<group>"; };
 		2E654C219D0CE7AF3C28A4DB /* SpeechTranscriberService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechTranscriberService.swift; sourceTree = "<group>"; };
 		31C9B7C7306890A74F4BEA9D /* StudyNoteGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyNoteGenerator.swift; sourceTree = "<group>"; };
 		36497FF3E478215B6B0196F9 /* WordGlossGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordGlossGenerator.swift; sourceTree = "<group>"; };
@@ -80,6 +86,9 @@
 				4097CB9BABDA7CDC95A8A86C /* IrohaExplorerView.swift */,
 				545CED820912E84C60D93AEA /* PinyinConverter.swift */,
 				31C9B7C7306890A74F4BEA9D /* StudyNoteGenerator.swift */,
+				241C2FC09591C0730AA0EF55 /* VocabularyEntry.swift */,
+				0909CDAE2AEC3B3672066AA3 /* VocabularyListView.swift */,
+				1497FE23ADF47C5FBBE22EC2 /* VocabularyStore.swift */,
 				36497FF3E478215B6B0196F9 /* WordGlossGenerator.swift */,
 			);
 			path = StudyNotes;
@@ -263,6 +272,9 @@
 				4A9D006ABCFD3DA1463D0AF2 /* StudyNoteGenerator.swift in Sources */,
 				60BED0A232FDDCD645DE9000 /* SupportedLanguage.swift in Sources */,
 				2C4760BA986A0BDD263AC21E /* TranscriptionRunnerView.swift in Sources */,
+				4747BB10B262695C49AF849D /* VocabularyEntry.swift in Sources */,
+				48D40D6016A289D197A8544F /* VocabularyListView.swift in Sources */,
+				A072511B809A6011E9CE02DE /* VocabularyStore.swift in Sources */,
 				3BC4CF7590E896B632A76A3F /* VoiceMemoImportView.swift in Sources */,
 				F6CAFEF06BA6318E3BC9C464 /* WordGlossGenerator.swift in Sources */,
 			);
