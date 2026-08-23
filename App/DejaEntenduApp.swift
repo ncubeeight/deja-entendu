@@ -6,7 +6,7 @@ struct DejaEntenduApp: App {
 
     var body: some Scene {
         WindowGroup {
-            VoiceMemoImportView()
+            HomeView()
                 .preferredColorScheme(AppColorScheme(rawValue: colorSchemeRaw)?.colorScheme)
         }
     }

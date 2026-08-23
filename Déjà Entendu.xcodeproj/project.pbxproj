@@ -18,13 +18,17 @@
 		48D40D6016A289D197A8544F /* VocabularyListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0909CDAE2AEC3B3672066AA3 /* VocabularyListView.swift */; };
 		4A9D006ABCFD3DA1463D0AF2 /* StudyNoteGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31C9B7C7306890A74F4BEA9D /* StudyNoteGenerator.swift */; };
 		4BD2C3C830E13087C9D8A09C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB97030EE7AF1FA03613B818 /* SettingsView.swift */; };
+		531CFFE2A135F991C5E2349B /* HomeSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98E767063B7F412349B1C30D /* HomeSummaryView.swift */; };
 		60BED0A232FDDCD645DE9000 /* SupportedLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B853B1C7C82C455A6977DCE /* SupportedLanguage.swift */; };
 		63673C8FAC2E483D6726F630 /* ImportedRecording.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9097D3B807C2021D8C5C6E0D /* ImportedRecording.swift */; };
 		75CCB407447E900359D8053E /* PinyinConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 545CED820912E84C60D93AEA /* PinyinConverter.swift */; };
 		77797AD12F21257B3216CC57 /* SpeechTranscriberService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E654C219D0CE7AF3C28A4DB /* SpeechTranscriberService.swift */; };
 		8BF0D6D13DE6DE67344DBB05 /* DejaEntenduApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B99D0191D8A4292C6A7D00F /* DejaEntenduApp.swift */; };
+		95724C5DBF8018B796C3BF50 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED8B6E871C12B6F530C01D7B /* HomeView.swift */; };
 		A072511B809A6011E9CE02DE /* VocabularyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1497FE23ADF47C5FBBE22EC2 /* VocabularyStore.swift */; };
 		ABEDF272E91FA658B66645D2 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01BDDE5661401078A20C46D7 /* ShareViewController.swift */; };
+		AF18FE5F3D4125A28382DEB3 /* AddVocabularyWordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD6D200A8D247A5D5469DE2F /* AddVocabularyWordView.swift */; };
+		CCC99BA07416940EC74E6C78 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82F10D3493959AFBE24EE55 /* AppTheme.swift */; };
 		E83036AEB3873C15437896BC /* AudioTranscoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4436C189F27EDA7AD4F93AFB /* AudioTranscoder.swift */; };
 		F6CAFEF06BA6318E3BC9C464 /* WordGlossGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36497FF3E478215B6B0196F9 /* WordGlossGenerator.swift */; };
 		F9A9E6B14BAFDA3DDB9061C3 /* SharedContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B868C956265CD4F61FBE8756 /* SharedContainer.swift */; };
@@ -70,7 +74,9 @@
 		5B5932862BBCA2002043D148 /* DejaEntendu.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DejaEntendu.entitlements; sourceTree = "<group>"; };
 		5D7C91F03475E5BE03BD8EC2 /* AddToDejaEntendu.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = AddToDejaEntendu.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9097D3B807C2021D8C5C6E0D /* ImportedRecording.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportedRecording.swift; sourceTree = "<group>"; };
+		98E767063B7F412349B1C30D /* HomeSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeSummaryView.swift; sourceTree = "<group>"; };
 		B50FE10824FC85FD864D8317 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B82F10D3493959AFBE24EE55 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		B868C956265CD4F61FBE8756 /* SharedContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedContainer.swift; sourceTree = "<group>"; };
 		BD7B99A4550DA8621703186A /* VoiceMemoImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceMemoImportView.swift; sourceTree = "<group>"; };
 		CB97030EE7AF1FA03613B818 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -78,9 +84,11 @@
 		D405202E2232960E90E45F78 /* AudioIngestion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioIngestion.swift; sourceTree = "<group>"; };
 		DEBD979638F7AC9B972B5E15 /* Déjà Entendu.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "Déjà Entendu.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ECDB69FA06163AB2AFC77BFE /* AddToDejaEntendu.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AddToDejaEntendu.entitlements; sourceTree = "<group>"; };
+		ED8B6E871C12B6F530C01D7B /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		F2D90040DF0148DEA2482634 /* TranscriptionRunnerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionRunnerView.swift; sourceTree = "<group>"; };
 		F48871D10B516169D69F88B6 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		F9C994147F6F2B7FED6FAFB6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		FD6D200A8D247A5D5469DE2F /* AddVocabularyWordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddVocabularyWordView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -120,10 +128,14 @@
 		344E09E7A71158BA5DEDDE42 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				FD6D200A8D247A5D5469DE2F /* AddVocabularyWordView.swift */,
 				F48871D10B516169D69F88B6 /* AppSettings.swift */,
+				B82F10D3493959AFBE24EE55 /* AppTheme.swift */,
 				B50FE10824FC85FD864D8317 /* Assets.xcassets */,
 				5B5932862BBCA2002043D148 /* DejaEntendu.entitlements */,
 				3B99D0191D8A4292C6A7D00F /* DejaEntenduApp.swift */,
+				98E767063B7F412349B1C30D /* HomeSummaryView.swift */,
+				ED8B6E871C12B6F530C01D7B /* HomeView.swift */,
 				D0A27B4F0DDE50FFD59E50F8 /* Info.plist */,
 				CB97030EE7AF1FA03613B818 /* SettingsView.swift */,
 				E44DB28005E4AB07077A9D87 /* AudioImport */,
@@ -267,10 +279,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AF18FE5F3D4125A28382DEB3 /* AddVocabularyWordView.swift in Sources */,
 				09ABE2E1400E88BC0CCB15D3 /* AppSettings.swift in Sources */,
+				CCC99BA07416940EC74E6C78 /* AppTheme.swift in Sources */,
 				2FF75223233F3A606B2E6193 /* AudioIngestion.swift in Sources */,
 				E83036AEB3873C15437896BC /* AudioTranscoder.swift in Sources */,
 				8BF0D6D13DE6DE67344DBB05 /* DejaEntenduApp.swift in Sources */,
+				531CFFE2A135F991C5E2349B /* HomeSummaryView.swift in Sources */,
+				95724C5DBF8018B796C3BF50 /* HomeView.swift in Sources */,
 				63673C8FAC2E483D6726F630 /* ImportedRecording.swift in Sources */,
 				395A311BB2EA35B39E0A324B /* IrohaExplorerView.swift in Sources */,
 				75CCB407447E900359D8053E /* PinyinConverter.swift in Sources */,
