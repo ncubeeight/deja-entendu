@@ -6,6 +6,9 @@ import UniformTypeIdentifiers
 /// out of Voice Memos (Voice Memos itself has no browsable Files location).
 struct VoiceMemoImportView: View {
     @State private var isPickerPresented = false
+    @State private var isLanguageSheetPresented = false
+    @State private var pendingLanguage: SupportedLanguage = .chineseTraditional
+    @State private var pendingShareExtensionFiles: [URL] = []
     @State private var importedRecordings: [ImportedRecording] = []
     @State private var importError: String?
 
@@ -31,7 +34,7 @@ struct VoiceMemoImportView: View {
                     NavigationLink(value: recording) {
                         VStack(alignment: .leading) {
                             Text(recording.originalFilename).font(.headline)
-                            Text(recording.importedAt.formatted(date: .abbreviated, time: .shortened))
+                            Text("\(recording.language.displayName) · \(recording.importedAt.formatted(date: .abbreviated, time: .shortened))")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -52,7 +55,8 @@ struct VoiceMemoImportView: View {
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        isPickerPresented = true
+                        pendingShareExtensionFiles = []
+                        isLanguageSheetPresented = true
                     } label: {
                         Label("Import from Files", systemImage: "folder.badge.plus")
                     }
@@ -63,12 +67,20 @@ struct VoiceMemoImportView: View {
                 allowedContentTypes: acceptedTypes,
                 allowsMultipleSelection: true
             ) { result in
-                handlePickerResult(result)
+                handlePickerResult(result, language: pendingLanguage)
+            }
+            .sheet(isPresented: $isLanguageSheetPresented) {
+                languageSelectionSheet
             }
             .task {
-                // Pick up anything the Share Extension dropped into the shared
-                // App Group container since we last launched.
-                importedRecordings += SharedContainer.drainPendingShareExtensionFiles()
+                // Anything the Share Extension dropped into the shared App
+                // Group container since we last launched — ask which language
+                // it's in before copying it into the app, same as Files import.
+                let pending = SharedContainer.pendingFiles()
+                if !pending.isEmpty {
+                    pendingShareExtensionFiles = pending
+                    isLanguageSheetPresented = true
+                }
             }
             .alert("Import failed", isPresented: .constant(importError != nil), actions: {
                 Button("OK") { importError = nil }
@@ -78,7 +90,51 @@ struct VoiceMemoImportView: View {
         }
     }
 
-    private func handlePickerResult(_ result: Result<[URL], Error>) {
+    @ViewBuilder
+    private var languageSelectionSheet: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Picker("Spoken language", selection: $pendingLanguage) {
+                        ForEach(SupportedLanguage.allCases, id: \.self) { language in
+                            Text(language.displayName).tag(language)
+                        }
+                    }
+                    .pickerStyle(.inline)
+                } header: {
+                    Text("What language is this recording in?")
+                } footer: {
+                    Text("Picking the right language up front means transcription runs in that language from the start.")
+                }
+            }
+            .navigationTitle("Choose Language")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        isLanguageSheetPresented = false
+                        pendingShareExtensionFiles = []
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Continue") {
+                        isLanguageSheetPresented = false
+                        if pendingShareExtensionFiles.isEmpty {
+                            isPickerPresented = true
+                        } else {
+                            importedRecordings += SharedContainer.commitPendingFiles(
+                                pendingShareExtensionFiles, language: pendingLanguage
+                            )
+                            pendingShareExtensionFiles = []
+                        }
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+
+    private func handlePickerResult(_ result: Result<[URL], Error>, language: SupportedLanguage) {
         switch result {
         case .failure(let error):
             importError = error.localizedDescription
@@ -88,7 +144,8 @@ struct VoiceMemoImportView: View {
                 do {
                     let copy = try AudioIngestion.copyIntoAppContainer(
                         from: pickedURL,
-                        source: .filesImporter
+                        source: .filesImporter,
+                        language: language
                     )
                     importedRecordings.append(copy)
                 } catch {

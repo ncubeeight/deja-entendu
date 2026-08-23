@@ -20,21 +20,26 @@ enum SharedContainer {
         return inbox
     }
 
-    /// Called on app launch/foreground: moves anything the extension dropped
-    /// off into the app's own permanent storage, then clears the inbox.
-    static func drainPendingShareExtensionFiles() -> [ImportedRecording] {
+    /// Called on app launch/foreground: lists anything the extension dropped
+    /// off, without copying it in yet. The caller should ask which language
+    /// this batch is in, then call `commitPendingFiles(_:language:)`.
+    static func pendingFiles() -> [URL] {
         guard let inbox = inboxDirectory() else { return [] }
-
-        let files = (try? FileManager.default.contentsOfDirectory(
+        return (try? FileManager.default.contentsOfDirectory(
             at: inbox, includingPropertiesForKeys: nil
         )) ?? []
+    }
 
+    /// Copies the given share-extension files into the app's own permanent
+    /// storage tagged with `language`, then clears them from the inbox.
+    static func commitPendingFiles(_ fileURLs: [URL], language: SupportedLanguage) -> [ImportedRecording] {
         var results: [ImportedRecording] = []
-        for fileURL in files {
+        for fileURL in fileURLs {
             do {
                 let recording = try AudioIngestion.copyIntoAppContainer(
                     from: fileURL,
-                    source: .shareExtension
+                    source: .shareExtension,
+                    language: language
                 )
                 results.append(recording)
                 try? FileManager.default.removeItem(at: fileURL)

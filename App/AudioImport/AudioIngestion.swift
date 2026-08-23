@@ -20,7 +20,8 @@ enum AudioIngestion {
 
     static func copyIntoAppContainer(
         from sourceURL: URL,
-        source: ImportedRecording.Source
+        source: ImportedRecording.Source,
+        language: SupportedLanguage
     ) throws -> ImportedRecording {
 
         // Files handed to us via .fileImporter are "security-scoped" — we must
@@ -52,7 +53,8 @@ enum AudioIngestion {
             originalFilename: sourceURL.lastPathComponent,
             localURL: destinationURL,
             importedAt: .now,
-            source: source
+            source: source,
+            language: language
         )
     }
 

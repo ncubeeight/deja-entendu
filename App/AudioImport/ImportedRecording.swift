@@ -8,6 +8,7 @@ struct ImportedRecording: Identifiable, Codable, Hashable {
     let localURL: URL          // file inside our own container — safe to reopen anytime
     let importedAt: Date
     let source: Source
+    let language: SupportedLanguage
 
     enum Source: String, Codable {
         case filesImporter   // picked via UIDocumentPicker / .fileImporter
