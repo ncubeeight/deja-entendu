@@ -39,6 +39,8 @@ targets:
       path: App/Info.plist
       properties:
         CFBundleDisplayName: "Déjà Entendu"
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSRequiresIPhoneOS: true
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
@@ -56,7 +58,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ncubeeight.dejaentendu
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "2"
+        CURRENT_PROJECT_VERSION: "3"
         TARGETED_DEVICE_FAMILY: "1"
       groups: [signing]
     dependencies:
@@ -73,6 +75,8 @@ targets:
       path: ShareExtension/Info.plist
       properties:
         CFBundleDisplayName: "Add to Déjà Entendu"
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.share-services
           NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShareViewController
@@ -89,7 +93,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ncubeeight.dejaentendu.share
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "2"
+        CURRENT_PROJECT_VERSION: "3"
         SKIP_INSTALL: "YES"
       groups: [signing]
 
