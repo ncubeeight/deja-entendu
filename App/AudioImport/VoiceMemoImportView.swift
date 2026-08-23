@@ -12,6 +12,13 @@ struct VoiceMemoImportView: View {
     @State private var importedRecordings: [ImportedRecording] = []
     @State private var importError: String?
 
+    @AppStorage(AppSettings.enabledLanguagesKey) private var enabledLanguagesRaw: String = ""
+
+    private var enabledLanguages: [SupportedLanguage] {
+        let enabled = AppSettings.languages(from: enabledLanguagesRaw)
+        return SupportedLanguage.allCases.filter { enabled.contains($0) }
+    }
+
     // Voice Memos exports as .m4a. We also accept mp3 and mp4 (e.g. a video
     // lesson recording) since the user may be pulling audio from elsewhere too.
     private let acceptedTypes: [UTType] = [
@@ -60,10 +67,17 @@ struct VoiceMemoImportView: View {
                         Label("Vocabulary", systemImage: "text.book.closed")
                     }
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink {
+                        SettingsView()
+                    } label: {
+                        Label("Settings", systemImage: "gearshape")
+                    }
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         pendingShareExtensionFiles = []
-                        isLanguageSheetPresented = true
+                        presentLanguageSheet()
                     } label: {
                         Label("Import from Files", systemImage: "folder.badge.plus")
                     }
@@ -86,7 +100,7 @@ struct VoiceMemoImportView: View {
                 let pending = SharedContainer.pendingFiles()
                 if !pending.isEmpty {
                     pendingShareExtensionFiles = pending
-                    isLanguageSheetPresented = true
+                    presentLanguageSheet()
                 }
             }
             .alert("Import failed", isPresented: .constant(importError != nil), actions: {
@@ -103,7 +117,7 @@ struct VoiceMemoImportView: View {
             Form {
                 Section {
                     Picker("Spoken language", selection: $pendingLanguage) {
-                        ForEach(SupportedLanguage.allCases, id: \.self) { language in
+                        ForEach(enabledLanguages, id: \.self) { language in
                             Text(language.displayName).tag(language)
                         }
                     }
@@ -139,6 +153,13 @@ struct VoiceMemoImportView: View {
             }
         }
         .presentationDetents([.medium])
+    }
+
+    private func presentLanguageSheet() {
+        if !enabledLanguages.contains(pendingLanguage) {
+            pendingLanguage = enabledLanguages.first ?? .chineseTraditional
+        }
+        isLanguageSheetPresented = true
     }
 
     private func handlePickerResult(_ result: Result<[URL], Error>, language: SupportedLanguage) {

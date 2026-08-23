@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		09ABE2E1400E88BC0CCB15D3 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F48871D10B516169D69F88B6 /* AppSettings.swift */; };
 		27FA4D49277FBC5EF4BA90E1 /* AddToDejaEntendu.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5D7C91F03475E5BE03BD8EC2 /* AddToDejaEntendu.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2C4760BA986A0BDD263AC21E /* TranscriptionRunnerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2D90040DF0148DEA2482634 /* TranscriptionRunnerView.swift */; };
 		2FF75223233F3A606B2E6193 /* AudioIngestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = D405202E2232960E90E45F78 /* AudioIngestion.swift */; };
@@ -16,6 +17,7 @@
 		4747BB10B262695C49AF849D /* VocabularyEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241C2FC09591C0730AA0EF55 /* VocabularyEntry.swift */; };
 		48D40D6016A289D197A8544F /* VocabularyListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0909CDAE2AEC3B3672066AA3 /* VocabularyListView.swift */; };
 		4A9D006ABCFD3DA1463D0AF2 /* StudyNoteGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31C9B7C7306890A74F4BEA9D /* StudyNoteGenerator.swift */; };
+		4BD2C3C830E13087C9D8A09C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB97030EE7AF1FA03613B818 /* SettingsView.swift */; };
 		60BED0A232FDDCD645DE9000 /* SupportedLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B853B1C7C82C455A6977DCE /* SupportedLanguage.swift */; };
 		63673C8FAC2E483D6726F630 /* ImportedRecording.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9097D3B807C2021D8C5C6E0D /* ImportedRecording.swift */; };
 		75CCB407447E900359D8053E /* PinyinConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 545CED820912E84C60D93AEA /* PinyinConverter.swift */; };
@@ -71,11 +73,13 @@
 		B50FE10824FC85FD864D8317 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B868C956265CD4F61FBE8756 /* SharedContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedContainer.swift; sourceTree = "<group>"; };
 		BD7B99A4550DA8621703186A /* VoiceMemoImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceMemoImportView.swift; sourceTree = "<group>"; };
+		CB97030EE7AF1FA03613B818 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		D0A27B4F0DDE50FFD59E50F8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D405202E2232960E90E45F78 /* AudioIngestion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioIngestion.swift; sourceTree = "<group>"; };
 		DEBD979638F7AC9B972B5E15 /* Déjà Entendu.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "Déjà Entendu.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ECDB69FA06163AB2AFC77BFE /* AddToDejaEntendu.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AddToDejaEntendu.entitlements; sourceTree = "<group>"; };
 		F2D90040DF0148DEA2482634 /* TranscriptionRunnerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionRunnerView.swift; sourceTree = "<group>"; };
+		F48871D10B516169D69F88B6 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		F9C994147F6F2B7FED6FAFB6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -116,10 +120,12 @@
 		344E09E7A71158BA5DEDDE42 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				F48871D10B516169D69F88B6 /* AppSettings.swift */,
 				B50FE10824FC85FD864D8317 /* Assets.xcassets */,
 				5B5932862BBCA2002043D148 /* DejaEntendu.entitlements */,
 				3B99D0191D8A4292C6A7D00F /* DejaEntenduApp.swift */,
 				D0A27B4F0DDE50FFD59E50F8 /* Info.plist */,
+				CB97030EE7AF1FA03613B818 /* SettingsView.swift */,
 				E44DB28005E4AB07077A9D87 /* AudioImport */,
 				EEEB74786552A86F8E74AE0B /* Pipeline */,
 				0A7B8DB21E3425D906E28378 /* StudyNotes */,
@@ -261,12 +267,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				09ABE2E1400E88BC0CCB15D3 /* AppSettings.swift in Sources */,
 				2FF75223233F3A606B2E6193 /* AudioIngestion.swift in Sources */,
 				E83036AEB3873C15437896BC /* AudioTranscoder.swift in Sources */,
 				8BF0D6D13DE6DE67344DBB05 /* DejaEntenduApp.swift in Sources */,
 				63673C8FAC2E483D6726F630 /* ImportedRecording.swift in Sources */,
 				395A311BB2EA35B39E0A324B /* IrohaExplorerView.swift in Sources */,
 				75CCB407447E900359D8053E /* PinyinConverter.swift in Sources */,
+				4BD2C3C830E13087C9D8A09C /* SettingsView.swift in Sources */,
 				F9A9E6B14BAFDA3DDB9061C3 /* SharedContainer.swift in Sources */,
 				77797AD12F21257B3216CC57 /* SpeechTranscriberService.swift in Sources */,
 				4A9D006ABCFD3DA1463D0AF2 /* StudyNoteGenerator.swift in Sources */,
