@@ -19,23 +19,18 @@ Open questions to resolve when this gets picked up:
 - Should it cache the full translation once generated, or regenerate each
   time the view appears?
 
-## Flashcards from tooltip lookups
+## Vocabulary flashcards — done
 
-After the full-transcript translation toggle above: let a user turn any
-word-lookup tooltip (the tap-to-define feature, e.g. in `IrohaExplorerView`)
-into a flashcard. Each flashcard is a dedicated page for one term showing:
-- The original term
-- Its translation
-- A pronunciation guide
-- An example sentence using the term, with the term highlighted within it
+Every vocabulary term (however it was added — transcript tap, manual entry,
+or shared in from Translate) now opens a dedicated flashcard page showing
+the original term, a plain-English pronunciation guide, a translation, and
+an example sentence with the term highlighted within it. Tapping a term on
+the Home screen's "Words to review" grid or in the Vocabulary list both
+navigate to the same `VocabularyFlashcardView`. Generated on-device via
+`FlashcardGenerator` (`FoundationModels`) and cached back into
+`VocabularyEntry`/`VocabularyStore` so a card only regenerates once.
 
-Open questions to resolve when this gets picked up:
-- Storage: likely the same on-device-only pattern as `VocabularyStore`
-  (JSON in the app container), possibly reusing/extending `VocabularyEntry`
-  rather than inventing a fully separate model.
-- Generation: the on-device LLM (`WordGlossGenerator`'s session, or a new
-  one) would need to produce the pronunciation guide + example sentence,
-  not just the short gloss it does today — a bigger prompt/response than
-  the current single-word lookup.
-- Review flow: is this just a browsable list of cards, or does it grow into
-  spaced-repetition-style review later?
+Not done: the `IrohaExplorerView` tap-to-define tooltip still only shows a
+quick gloss popover — it doesn't yet offer an "Add to Vocabulary" action
+the way the transcript view's word tokens do, so flashcards can't be
+created directly from that screen. Worth revisiting if that gap matters.
