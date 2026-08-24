@@ -49,6 +49,7 @@ targets:
           - UIInterfaceOrientationPortrait
         NSSpeechRecognitionUsageDescription: "Used to transcribe your Mandarin practice recordings on-device."
         NSMicrophoneUsageDescription: "Used to record your Mandarin practice sessions."
+        ITSAppUsesNonExemptEncryption: false
     entitlements:
       path: App/DejaEntendu.entitlements
       properties:
@@ -58,7 +59,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ncubeeight.dejaentendu
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "7"
+        CURRENT_PROJECT_VERSION: "8"
         TARGETED_DEVICE_FAMILY: "1"
       groups: [signing]
     dependencies:
@@ -94,7 +95,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ncubeeight.dejaentendu.share
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "7"
+        CURRENT_PROJECT_VERSION: "8"
         SKIP_INSTALL: "YES"
       groups: [signing]
 
