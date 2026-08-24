@@ -122,7 +122,7 @@ struct HomeSummaryView: View {
     @ViewBuilder
     private var continueListeningSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Continue listening")
+            Text("Continue studying")
                 .font(.headline)
                 .fontDesign(.rounded)
                 .foregroundStyle(AppTheme.ink)

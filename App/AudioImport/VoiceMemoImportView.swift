@@ -38,13 +38,23 @@ struct VoiceMemoImportView: View {
                     )
                 }
                 ForEach(importedRecordings) { recording in
-                    NavigationLink(value: recording) {
-                        VStack(alignment: .leading) {
-                            Text(recording.originalFilename).font(.headline)
-                            Text("\(recording.language.displayName) · \(recording.importedAt.formatted(date: .abbreviated, time: .shortened))")
-                                .font(.caption)
+                    HStack {
+                        NavigationLink(value: recording) {
+                            VStack(alignment: .leading) {
+                                Text(recording.originalFilename).font(.headline)
+                                Text("\(recording.language.displayName) · \(recording.importedAt.formatted(date: .abbreviated, time: .shortened))")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        Spacer()
+                        Button {
+                            deleteRecording(recording)
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
                                 .foregroundStyle(.secondary)
                         }
+                        .buttonStyle(.plain)
                     }
                 }
             }
@@ -73,6 +83,12 @@ struct VoiceMemoImportView: View {
                 languageSelectionSheet
             }
             .task {
+                // Reload every time this tab appears — otherwise a deletion
+                // made from Home's "Continue studying" section wouldn't show
+                // up here, since this view's own @State only loaded once at
+                // init and was never told about changes made elsewhere.
+                importedRecordings = ImportedRecordingStore.load()
+
                 // Anything the Share Extension dropped into the shared App
                 // Group container since we last launched — ask which language
                 // it's in before copying it into the app, same as Files import.
@@ -142,6 +158,13 @@ struct VoiceMemoImportView: View {
             pendingLanguage = enabledLanguages.first ?? .chineseTraditional
         }
         isLanguageSheetPresented = true
+    }
+
+    private func deleteRecording(_ recording: ImportedRecording) {
+        withAnimation {
+            importedRecordings.removeAll { $0.id == recording.id }
+        }
+        try? FileManager.default.removeItem(at: recording.localURL)
     }
 
     private func handlePickerResult(_ result: Result<[URL], Error>, language: SupportedLanguage) {

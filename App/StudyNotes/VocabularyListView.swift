@@ -15,13 +15,23 @@ struct VocabularyListView: View {
                 )
             }
             ForEach(entries) { entry in
-                NavigationLink(value: entry) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(entry.text).font(.body)
-                        Text(entry.addedAt.formatted(date: .abbreviated, time: .shortened))
-                            .font(.caption)
+                HStack {
+                    NavigationLink(value: entry) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(entry.text).font(.body)
+                            Text(entry.addedAt.formatted(date: .abbreviated, time: .shortened))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    Spacer()
+                    Button {
+                        delete(entry)
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
                             .foregroundStyle(.secondary)
                     }
+                    .buttonStyle(.plain)
                 }
             }
             .onDelete(perform: delete)
@@ -47,6 +57,13 @@ struct VocabularyListView: View {
 
     private func delete(at offsets: IndexSet) {
         entries.remove(atOffsets: offsets)
+        VocabularyStore.save(entries)
+    }
+
+    private func delete(_ entry: VocabularyEntry) {
+        withAnimation {
+            entries.removeAll { $0.id == entry.id }
+        }
         VocabularyStore.save(entries)
     }
 }
