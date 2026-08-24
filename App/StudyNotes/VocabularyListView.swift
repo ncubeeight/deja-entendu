@@ -26,6 +26,12 @@ struct VocabularyListView: View {
         }
         .navigationTitle("Vocabulary")
         .task {
+            // Pick up anything added elsewhere (the transcript's "Add to
+            // Vocabulary" button, the Home screen's manual-add sheet) since
+            // this view last loaded — those write straight to the store,
+            // not through the Share Extension inbox below.
+            entries = VocabularyStore.load()
+
             let newTexts = SharedContainer.drainPendingVocabularyTexts()
             guard !newTexts.isEmpty else { return }
             let newEntries = newTexts.map { VocabularyEntry(id: UUID(), text: $0, addedAt: .now) }
