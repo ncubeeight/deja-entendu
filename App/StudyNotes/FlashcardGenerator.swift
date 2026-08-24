@@ -29,11 +29,13 @@ enum FlashcardError: LocalizedError {
 
 enum FlashcardGenerator {
 
-    /// Vocabulary entries don't carry a known source language (they arrive
-    /// as freeform text from Translate, manual entry, or a tapped transcript
-    /// word), so the model is asked to identify the language itself as part
-    /// of the same pass, rather than requiring it as an input.
-    static func generateDetails(forTerm term: String) async throws -> FlashcardDetails {
+    /// When the entry came from a tapped transcript word, `language` is
+    /// already known from the recording it was tagged with — pass it so the
+    /// model doesn't have to guess (a bare word like "commandera" can look
+    /// like Spanish/Italian as easily as French, and got that wrong before
+    /// this was threaded through). Entries without a known language (freeform
+    /// text from Translate, manual entry) still ask the model to identify it.
+    static func generateDetails(forTerm term: String, language: SupportedLanguage?) async throws -> FlashcardDetails {
         let model = SystemLanguageModel.default
 
         switch model.availability {
@@ -43,16 +45,28 @@ enum FlashcardGenerator {
             throw FlashcardError.modelUnavailable(String(describing: reason))
         }
 
-        let session = LanguageModelSession(
-            model: model,
-            instructions: """
+        let instructions: String
+        if let language {
+            instructions = """
+            You are a compact language-learning dictionary. The user will give \
+            you a word or short phrase in \(language.displayName) — treat that \
+            as certain, do not second-guess or reinterpret it as another \
+            language even if it also resembles a word in one. Produce a \
+            pronunciation guide, a translation, and a short natural example \
+            sentence in \(language.displayName) using the term — plus that \
+            sentence's English translation.
+            """
+        } else {
+            instructions = """
             You are a compact language-learning dictionary. Given a word or \
             short phrase, first identify what language it's in, then produce \
             a pronunciation guide, a translation, and a short natural example \
             sentence using the term in that language — plus that sentence's \
             English translation.
             """
-        )
+        }
+
+        let session = LanguageModelSession(model: model, instructions: instructions)
 
         let response = try await session.respond(
             to: "Term: \(term)",

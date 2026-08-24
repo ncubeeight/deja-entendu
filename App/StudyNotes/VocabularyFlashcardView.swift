@@ -110,7 +110,7 @@ struct VocabularyFlashcardView: View {
     private func generate() async {
         status = .loading
         do {
-            let details = try await FlashcardGenerator.generateDetails(forTerm: entry.text)
+            let details = try await FlashcardGenerator.generateDetails(forTerm: entry.text, language: entry.language)
             status = .ready(details)
 
             var entries = VocabularyStore.load()

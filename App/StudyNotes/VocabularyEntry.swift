@@ -7,6 +7,12 @@ struct VocabularyEntry: Identifiable, Codable, Hashable {
     let text: String
     let addedAt: Date
 
+    // Known when the term came from a tapped transcript word (the recording
+    // it came from is already tagged with a language); nil for terms that
+    // arrive without one, like a manual entry or a Share Extension text drop
+    // — those still ask the flashcard generator to infer the language.
+    var language: SupportedLanguage? = nil
+
     // Generated on-device the first time the flashcard is opened, then
     // cached here so it isn't regenerated on every visit. Optional (and
     // decode-safe for entries persisted before these fields existed).

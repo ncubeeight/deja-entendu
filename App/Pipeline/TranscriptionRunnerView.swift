@@ -71,7 +71,7 @@ struct TranscriptionRunnerView: View {
                             Array(TextSegmentation.words(in: sentence, language: recording.language.nlLanguage).enumerated()),
                             id: \.offset
                         ) { _, word in
-                            TranscriptWordToken(word: word)
+                            TranscriptWordToken(word: word, language: recording.language)
                         }
                     }
                 }
@@ -116,6 +116,7 @@ struct TranscriptionRunnerView: View {
 
 private struct TranscriptWordToken: View {
     let word: String
+    let language: SupportedLanguage
 
     @State private var isSelected = false
     @State private var didAdd = false
@@ -163,7 +164,7 @@ private struct TranscriptWordToken: View {
 
     private func addToVocabulary() {
         var entries = VocabularyStore.load()
-        entries.insert(VocabularyEntry(id: UUID(), text: word, addedAt: .now), at: 0)
+        entries.insert(VocabularyEntry(id: UUID(), text: word, addedAt: .now, language: language), at: 0)
         VocabularyStore.save(entries)
         didAdd = true
     }
