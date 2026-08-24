@@ -47,6 +47,11 @@ targets:
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
         NSSpeechRecognitionUsageDescription: "Used to transcribe your Mandarin practice recordings on-device."
         NSMicrophoneUsageDescription: "Used to record your Mandarin practice sessions."
         ITSAppUsesNonExemptEncryption: false
@@ -60,7 +65,9 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.ncubeeight.dejaentendu
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "10"
-        TARGETED_DEVICE_FAMILY: "1"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: YES
+        DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER: NO
       groups: [signing]
     dependencies:
       - target: AddToDejaEntendu
@@ -97,6 +104,9 @@ targets:
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "10"
         SKIP_INSTALL: "YES"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: YES
+        DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER: NO
       groups: [signing]
 
 schemes:
