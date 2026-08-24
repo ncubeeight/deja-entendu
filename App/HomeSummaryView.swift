@@ -81,6 +81,21 @@ struct HomeSummaryView: View {
         }
     }
 
+    private func deleteRecording(_ recording: ImportedRecording) {
+        withAnimation {
+            recordings.removeAll { $0.id == recording.id }
+        }
+        ImportedRecordingStore.save(recordings)
+        try? FileManager.default.removeItem(at: recording.localURL)
+    }
+
+    private func deleteVocabulary(_ entry: VocabularyEntry) {
+        withAnimation {
+            vocabulary.removeAll { $0.id == entry.id }
+        }
+        VocabularyStore.save(vocabulary)
+    }
+
     @ViewBuilder
     private var titleBanner: some View {
         VStack(spacing: 10) {
@@ -123,27 +138,38 @@ struct HomeSummaryView: View {
             } else {
                 VStack(spacing: 10) {
                     ForEach(recordings.prefix(3)) { recording in
-                        NavigationLink(value: recording) {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(recording.originalFilename)
-                                        .font(.subheadline.weight(.semibold))
-                                        .foregroundStyle(AppTheme.ink)
-                                        .lineLimit(1)
-                                    Text("\(recording.language.displayName) · \(recording.importedAt.formatted(date: .abbreviated, time: .shortened))")
+                        HStack(spacing: 8) {
+                            NavigationLink(value: recording) {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(recording.originalFilename)
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundStyle(AppTheme.ink)
+                                            .lineLimit(1)
+                                        Text("\(recording.language.displayName) · \(recording.importedAt.formatted(date: .abbreviated, time: .shortened))")
+                                            .font(.caption)
+                                            .foregroundStyle(AppTheme.inkSoft)
+                                    }
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
                                         .font(.caption)
                                         .foregroundStyle(AppTheme.inkSoft)
                                 }
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.caption)
+                            }
+                            .buttonStyle(.plain)
+
+                            Button {
+                                deleteRecording(recording)
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.subheadline)
                                     .foregroundStyle(AppTheme.inkSoft)
                             }
-                            .padding(16)
-                            .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: 18))
-                            .overlay(RoundedRectangle(cornerRadius: 18).stroke(AppTheme.line))
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
+                        .padding(16)
+                        .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: 18))
+                        .overlay(RoundedRectangle(cornerRadius: 18).stroke(AppTheme.line))
                     }
                 }
             }
@@ -184,6 +210,18 @@ struct HomeSummaryView: View {
                                 .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppTheme.line))
                         }
                         .buttonStyle(.plain)
+                        .overlay(alignment: .topTrailing) {
+                            Button {
+                                deleteVocabulary(entry)
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.callout)
+                                    .foregroundStyle(AppTheme.inkSoft)
+                                    .background(AppTheme.surface, in: Circle())
+                            }
+                            .buttonStyle(.plain)
+                            .offset(x: 6, y: -6)
+                        }
                     }
                 }
             }
