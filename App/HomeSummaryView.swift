@@ -3,12 +3,10 @@ import SwiftUI
 /// The "Home" tab: a quick-glance summary styled after the home-screen
 /// design, but showing only what the app actually has data for.
 ///
-/// Two things from the design are deliberately NOT here, rather than
-/// faked: the streak / daily-goal ring (no streak tracking exists
-/// anywhere in the app), and flip-to-reveal pinyin on vocabulary chips
-/// (VocabularyEntry is freeform shared text — there's no separate
-/// word/pinyin/translation to flip between). Both are natural follow-ups
-/// once that data exists.
+/// One thing from the design is deliberately NOT here, rather than faked:
+/// the streak / daily-goal ring (no streak tracking exists anywhere in the
+/// app) — a natural follow-up once that data exists. Vocabulary chips do
+/// link to a real flashcard now (VocabularyFlashcardView).
 struct HomeSummaryView: View {
     @Binding var selectedTab: Int
 
@@ -53,6 +51,9 @@ struct HomeSummaryView: View {
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: ImportedRecording.self) { recording in
                 TranscriptionRunnerView(recording: recording)
+            }
+            .navigationDestination(for: VocabularyEntry.self) { entry in
+                VocabularyFlashcardView(entry: entry)
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -170,16 +171,19 @@ struct HomeSummaryView: View {
             } else {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 10)], spacing: 10) {
                     ForEach(vocabulary.prefix(9)) { entry in
-                        Text(entry.text)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(AppTheme.ink)
-                            .lineLimit(2)
-                            .multilineTextAlignment(.center)
-                            .padding(.vertical, 14)
-                            .padding(.horizontal, 8)
-                            .frame(maxWidth: .infinity)
-                            .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: 16))
-                            .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppTheme.line))
+                        NavigationLink(value: entry) {
+                            Text(entry.text)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(AppTheme.ink)
+                                .lineLimit(2)
+                                .multilineTextAlignment(.center)
+                                .padding(.vertical, 14)
+                                .padding(.horizontal, 8)
+                                .frame(maxWidth: .infinity)
+                                .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: 16))
+                                .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppTheme.line))
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
             }

@@ -12,6 +12,7 @@
 		2C4760BA986A0BDD263AC21E /* TranscriptionRunnerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2D90040DF0148DEA2482634 /* TranscriptionRunnerView.swift */; };
 		2FF75223233F3A606B2E6193 /* AudioIngestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = D405202E2232960E90E45F78 /* AudioIngestion.swift */; };
 		32C35E55ABA9DA1280FED30B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B50FE10824FC85FD864D8317 /* Assets.xcassets */; };
+		367D83537D932CA8CF80A219 /* VocabularyFlashcardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81A7526DFA047699A0A2804 /* VocabularyFlashcardView.swift */; };
 		395A311BB2EA35B39E0A324B /* IrohaExplorerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4097CB9BABDA7CDC95A8A86C /* IrohaExplorerView.swift */; };
 		3BC4CF7590E896B632A76A3F /* VoiceMemoImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD7B99A4550DA8621703186A /* VoiceMemoImportView.swift */; };
 		4747BB10B262695C49AF849D /* VocabularyEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241C2FC09591C0730AA0EF55 /* VocabularyEntry.swift */; };
@@ -31,6 +32,7 @@
 		A35CB35F9875D5B0AF32C314 /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9453282B623D19EFE79CC6A0 /* FlowLayout.swift */; };
 		ABEDF272E91FA658B66645D2 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01BDDE5661401078A20C46D7 /* ShareViewController.swift */; };
 		AF18FE5F3D4125A28382DEB3 /* AddVocabularyWordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD6D200A8D247A5D5469DE2F /* AddVocabularyWordView.swift */; };
+		CC89ABD3012341C29FFCEEC8 /* FlashcardGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6918E083C67DB08FEAAA331 /* FlashcardGenerator.swift */; };
 		CCC99BA07416940EC74E6C78 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82F10D3493959AFBE24EE55 /* AppTheme.swift */; };
 		E83036AEB3873C15437896BC /* AudioTranscoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4436C189F27EDA7AD4F93AFB /* AudioTranscoder.swift */; };
 		F6CAFEF06BA6318E3BC9C464 /* WordGlossGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36497FF3E478215B6B0196F9 /* WordGlossGenerator.swift */; };
@@ -85,10 +87,12 @@
 		B82F10D3493959AFBE24EE55 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		B868C956265CD4F61FBE8756 /* SharedContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedContainer.swift; sourceTree = "<group>"; };
 		BD7B99A4550DA8621703186A /* VoiceMemoImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceMemoImportView.swift; sourceTree = "<group>"; };
+		C6918E083C67DB08FEAAA331 /* FlashcardGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlashcardGenerator.swift; sourceTree = "<group>"; };
 		CB97030EE7AF1FA03613B818 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		D0A27B4F0DDE50FFD59E50F8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D405202E2232960E90E45F78 /* AudioIngestion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioIngestion.swift; sourceTree = "<group>"; };
 		DEBD979638F7AC9B972B5E15 /* Déjà Entendu.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "Déjà Entendu.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E81A7526DFA047699A0A2804 /* VocabularyFlashcardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabularyFlashcardView.swift; sourceTree = "<group>"; };
 		ECDB69FA06163AB2AFC77BFE /* AddToDejaEntendu.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AddToDejaEntendu.entitlements; sourceTree = "<group>"; };
 		ED8B6E871C12B6F530C01D7B /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		F2D90040DF0148DEA2482634 /* TranscriptionRunnerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionRunnerView.swift; sourceTree = "<group>"; };
@@ -101,10 +105,12 @@
 		0A7B8DB21E3425D906E28378 /* StudyNotes */ = {
 			isa = PBXGroup;
 			children = (
+				C6918E083C67DB08FEAAA331 /* FlashcardGenerator.swift */,
 				4097CB9BABDA7CDC95A8A86C /* IrohaExplorerView.swift */,
 				545CED820912E84C60D93AEA /* PinyinConverter.swift */,
 				31C9B7C7306890A74F4BEA9D /* StudyNoteGenerator.swift */,
 				241C2FC09591C0730AA0EF55 /* VocabularyEntry.swift */,
+				E81A7526DFA047699A0A2804 /* VocabularyFlashcardView.swift */,
 				0909CDAE2AEC3B3672066AA3 /* VocabularyListView.swift */,
 				1497FE23ADF47C5FBBE22EC2 /* VocabularyStore.swift */,
 				36497FF3E478215B6B0196F9 /* WordGlossGenerator.swift */,
@@ -294,6 +300,7 @@
 				2FF75223233F3A606B2E6193 /* AudioIngestion.swift in Sources */,
 				E83036AEB3873C15437896BC /* AudioTranscoder.swift in Sources */,
 				8BF0D6D13DE6DE67344DBB05 /* DejaEntenduApp.swift in Sources */,
+				CC89ABD3012341C29FFCEEC8 /* FlashcardGenerator.swift in Sources */,
 				A35CB35F9875D5B0AF32C314 /* FlowLayout.swift in Sources */,
 				531CFFE2A135F991C5E2349B /* HomeSummaryView.swift in Sources */,
 				95724C5DBF8018B796C3BF50 /* HomeView.swift in Sources */,
@@ -309,6 +316,7 @@
 				93E39111A8A1D46D559374EF /* TextSegmentation.swift in Sources */,
 				2C4760BA986A0BDD263AC21E /* TranscriptionRunnerView.swift in Sources */,
 				4747BB10B262695C49AF849D /* VocabularyEntry.swift in Sources */,
+				367D83537D932CA8CF80A219 /* VocabularyFlashcardView.swift in Sources */,
 				48D40D6016A289D197A8544F /* VocabularyListView.swift in Sources */,
 				A072511B809A6011E9CE02DE /* VocabularyStore.swift in Sources */,
 				3BC4CF7590E896B632A76A3F /* VoiceMemoImportView.swift in Sources */,

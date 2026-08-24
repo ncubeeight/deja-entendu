@@ -15,16 +15,21 @@ struct VocabularyListView: View {
                 )
             }
             ForEach(entries) { entry in
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(entry.text).font(.body)
-                    Text(entry.addedAt.formatted(date: .abbreviated, time: .shortened))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                NavigationLink(value: entry) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(entry.text).font(.body)
+                        Text(entry.addedAt.formatted(date: .abbreviated, time: .shortened))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
             .onDelete(perform: delete)
         }
         .navigationTitle("Vocabulary")
+        .navigationDestination(for: VocabularyEntry.self) { entry in
+            VocabularyFlashcardView(entry: entry)
+        }
         .task {
             // Pick up anything added elsewhere (the transcript's "Add to
             // Vocabulary" button, the Home screen's manual-add sheet) since
