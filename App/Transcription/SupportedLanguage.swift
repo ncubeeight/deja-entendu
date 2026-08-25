@@ -10,6 +10,13 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
     case japanese
     case german
     case french
+    case spanish
+    case thai
+    case korean
+    case vietnamese
+    case hindi
+    case tamil
+    case gujarati
 
     var locale: Locale {
         switch self {
@@ -23,6 +30,20 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
             Locale(identifier: "de-DE")
         case .french:
             Locale(identifier: "fr-FR")
+        case .spanish:
+            Locale(identifier: "es-ES")
+        case .thai:
+            Locale(identifier: "th-TH")
+        case .korean:
+            Locale(identifier: "ko-KR")
+        case .vietnamese:
+            Locale(identifier: "vi-VN")
+        case .hindi:
+            Locale(identifier: "hi-IN")
+        case .tamil:
+            Locale(identifier: "ta-IN")
+        case .gujarati:
+            Locale(identifier: "gu-IN")
         }
     }
 
@@ -36,6 +57,13 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
         case .japanese: .japanese
         case .german: .german
         case .french: .french
+        case .spanish: .spanish
+        case .thai: .thai
+        case .korean: .korean
+        case .vietnamese: .vietnamese
+        case .hindi: .hindi
+        case .tamil: .tamil
+        case .gujarati: .gujarati
         }
     }
 
@@ -46,6 +74,13 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
         case .japanese: "Japanese"
         case .german: "German"
         case .french: "French"
+        case .spanish: "Spanish"
+        case .thai: "Thai"
+        case .korean: "Korean"
+        case .vietnamese: "Vietnamese"
+        case .hindi: "Hindi"
+        case .tamil: "Tamil"
+        case .gujarati: "Gujarati"
         }
     }
 }

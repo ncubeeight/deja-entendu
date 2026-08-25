@@ -11,7 +11,7 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Section {
-                ForEach(SupportedLanguage.allCases, id: \.self) { language in
+                ForEach(SupportedLanguage.allCases.sorted { $0.displayName < $1.displayName }, id: \.self) { language in
                     Toggle(language.displayName, isOn: binding(for: language))
                 }
             } header: {
