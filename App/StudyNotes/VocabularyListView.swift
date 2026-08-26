@@ -4,6 +4,16 @@ import SwiftUI
 /// Extension's plain-text path, plus anything added manually later.
 struct VocabularyListView: View {
     @State private var entries: [VocabularyEntry] = VocabularyStore.load()
+    @State private var pendingSharedTexts: [String] = []
+    @State private var isLanguageSheetPresented = false
+    @State private var pendingLanguage: SupportedLanguage = .chineseTraditional
+
+    @AppStorage(AppSettings.enabledLanguagesKey) private var enabledLanguagesRaw: String = ""
+
+    private var enabledLanguages: [SupportedLanguage] {
+        let enabled = AppSettings.languages(from: enabledLanguagesRaw)
+        return SupportedLanguage.allCases.filter { enabled.contains($0) }
+    }
 
     var body: some View {
         List {
@@ -40,6 +50,9 @@ struct VocabularyListView: View {
         .navigationDestination(for: VocabularyEntry.self) { entry in
             VocabularyFlashcardView(entry: entry)
         }
+        .sheet(isPresented: $isLanguageSheetPresented) {
+            languageSelectionSheet
+        }
         .task {
             // Pick up anything added elsewhere (the transcript's "Add to
             // Vocabulary" button, the Home screen's manual-add sheet) since
@@ -49,10 +62,57 @@ struct VocabularyListView: View {
 
             let newTexts = SharedContainer.drainPendingVocabularyTexts()
             guard !newTexts.isEmpty else { return }
-            let newEntries = newTexts.map { VocabularyEntry(id: UUID(), text: $0, addedAt: .now) }
-            entries = newEntries + entries
-            VocabularyStore.save(entries)
+            // Shared text (e.g. from Translate) carries no language of its
+            // own, and without one the flashcard's speak button and
+            // on-device generation both have to guess — asking here, the
+            // same way audio import already asks before committing files,
+            // avoids that instead of guessing after the fact.
+            pendingSharedTexts = newTexts
+            if !enabledLanguages.contains(pendingLanguage) {
+                pendingLanguage = enabledLanguages.first ?? .chineseTraditional
+            }
+            isLanguageSheetPresented = true
         }
+    }
+
+    @ViewBuilder
+    private var languageSelectionSheet: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Picker("Language", selection: $pendingLanguage) {
+                        ForEach(enabledLanguages, id: \.self) { language in
+                            Text(language.displayName).tag(language)
+                        }
+                    }
+                    .pickerStyle(.inline)
+                } header: {
+                    Text(pendingSharedTexts.count == 1 ? "What language is this word in?" : "What language are these words in?")
+                }
+            }
+            .navigationTitle("Choose Language")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        isLanguageSheetPresented = false
+                        pendingSharedTexts = []
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Continue") {
+                        let newEntries = pendingSharedTexts.map {
+                            VocabularyEntry(id: UUID(), text: $0, addedAt: .now, language: pendingLanguage)
+                        }
+                        entries = newEntries + entries
+                        VocabularyStore.save(entries)
+                        pendingSharedTexts = []
+                        isLanguageSheetPresented = false
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
     }
 
     private func delete(at offsets: IndexSet) {
