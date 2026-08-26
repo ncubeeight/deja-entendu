@@ -1,4 +1,5 @@
 import SwiftUI
+import AVFoundation
 
 /// A dedicated page for one vocabulary term: pronunciation, translation, and
 /// an example sentence with the term highlighted. Generated on-device the
@@ -7,6 +8,7 @@ struct VocabularyFlashcardView: View {
     let entry: VocabularyEntry
 
     @State private var status: Status
+    @State private var speechSynthesizer = AVSpeechSynthesizer()
 
     private enum Status {
         case loading
@@ -34,8 +36,26 @@ struct VocabularyFlashcardView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                Text(entry.text)
-                    .font(.system(size: 40, weight: .bold))
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 12) {
+                        Text(entry.text)
+                            .font(.system(size: 40, weight: .bold))
+
+                        Button {
+                            speak()
+                        } label: {
+                            Image(systemName: "speaker.wave.2.fill")
+                                .font(.title2)
+                        }
+                        .disabled(!isVoiceAvailable)
+                    }
+
+                    if !isVoiceAvailable {
+                        Text("Spoken pronunciation isn't available for \(entry.language?.displayName ?? "this term") on this device.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
 
                 switch status {
                 case .loading:
@@ -105,6 +125,27 @@ struct VocabularyFlashcardView: View {
             attributed[attributedRange].foregroundColor = .accentColor
         }
         return attributed
+    }
+
+    /// Only meaningful when the entry's language is known — without it we'd
+    /// fall back to the system's default voice, which is available but not
+    /// reliably correct, so that case is treated as "available" rather than
+    /// blocked. When the language IS known, Apple's speech-synthesis voice
+    /// catalog doesn't cover every language this app supports (e.g. no
+    /// Gujarati voice exists as of this SDK) — checked directly rather than
+    /// assumed, since AVSpeechSynthesisVoice(language:) already returns nil
+    /// gracefully for an unsupported locale instead of crashing.
+    private var isVoiceAvailable: Bool {
+        guard let language = entry.language else { return true }
+        return AVSpeechSynthesisVoice(language: language.locale.identifier) != nil
+    }
+
+    private func speak() {
+        let utterance = AVSpeechUtterance(string: entry.text)
+        if let language = entry.language {
+            utterance.voice = AVSpeechSynthesisVoice(language: language.locale.identifier)
+        }
+        speechSynthesizer.speak(utterance)
     }
 
     private func generate() async {
