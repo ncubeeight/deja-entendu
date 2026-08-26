@@ -3,7 +3,15 @@ import FoundationModels
 
 @Generable
 struct FlashcardDetails {
-    @Guide(description: "A simple phonetic pronunciation guide using plain English spelling, not IPA — e.g. 'boh-ZHOOR'.")
+    @Guide(description: """
+    A simple phonetic pronunciation guide using plain English spelling, not \
+    IPA. It must sound out the term's ENTIRE original text from first \
+    syllable to last — never a truncated stem, prefix, or shortened form. \
+    e.g. for the 2-syllable term "Bonjour", 'boh-ZHOOR' (both syllables); \
+    for the 3-syllable term "réfléchi", 'ray-flay-SHEE' (all three \
+    syllables, not just 'ray-flay'). Every syllable of the original term \
+    must be represented.
+    """)
     var pronunciation: String
 
     @Guide(description: "A brief, natural English translation or definition of the term.")
@@ -54,7 +62,9 @@ enum FlashcardGenerator {
             language even if it also resembles a word in one. Produce a \
             pronunciation guide, a translation, and a short natural example \
             sentence in \(language.displayName) using the term — plus that \
-            sentence's English translation.
+            sentence's English translation. The pronunciation guide must \
+            cover the term's full length, every syllable from start to \
+            finish — never just a stem or the first part of a longer word.
             """
         } else {
             instructions = """
@@ -62,7 +72,9 @@ enum FlashcardGenerator {
             short phrase, first identify what language it's in, then produce \
             a pronunciation guide, a translation, and a short natural example \
             sentence using the term in that language — plus that sentence's \
-            English translation.
+            English translation. The pronunciation guide must cover the \
+            term's full length, every syllable from start to finish — never \
+            just a stem or the first part of a longer word.
             """
         }
 

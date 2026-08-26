@@ -198,16 +198,24 @@ struct HomeSummaryView: View {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 10)], spacing: 10) {
                     ForEach(vocabulary.prefix(9)) { entry in
                         NavigationLink(value: entry) {
-                            Text(entry.text)
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(AppTheme.ink)
-                                .lineLimit(2)
-                                .multilineTextAlignment(.center)
-                                .padding(.vertical, 14)
-                                .padding(.horizontal, 8)
-                                .frame(maxWidth: .infinity)
-                                .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: 16))
-                                .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppTheme.line))
+                            VStack(spacing: 4) {
+                                Text(entry.text)
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(AppTheme.ink)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
+                                Text(subtitle(for: entry))
+                                    .font(.caption2)
+                                    .foregroundStyle(AppTheme.inkSoft)
+                                    .lineLimit(2)
+                                    .minimumScaleFactor(0.7)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .padding(.vertical, 14)
+                            .padding(.horizontal, 8)
+                            .frame(maxWidth: .infinity)
+                            .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: 16))
+                            .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppTheme.line))
                         }
                         .buttonStyle(.plain)
                         .overlay(alignment: .topTrailing) {
@@ -223,9 +231,20 @@ struct HomeSummaryView: View {
                             .offset(x: 6, y: -6)
                         }
                     }
+                    addWordCard
                 }
             }
         }
+    }
+
+    /// Mirrors placeholderCard's "gloss · language" line using whatever real
+    /// data the entry actually has — translation isn't generated until the
+    /// flashcard has been opened once, and language is nil for older entries
+    /// saved before entries started capturing one, so this degrades to
+    /// whichever piece is available rather than assuming both.
+    private func subtitle(for entry: VocabularyEntry) -> String {
+        let parts = [entry.translation, entry.language?.displayName].compactMap { $0 }
+        return parts.isEmpty ? "Tap to view" : parts.joined(separator: " · ")
     }
 
     @ViewBuilder
