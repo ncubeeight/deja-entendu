@@ -9,6 +9,7 @@ struct TranscriptionRunnerView: View {
     let recording: ImportedRecording
 
     @State private var status: Status = .idle
+    @State private var flashcardEntry: VocabularyEntry?
 
     enum Status {
         case idle
@@ -50,6 +51,9 @@ struct TranscriptionRunnerView: View {
             .padding()
         }
         .navigationTitle(recording.originalFilename)
+        .navigationDestination(item: $flashcardEntry) { entry in
+            VocabularyFlashcardView(entry: entry)
+        }
         .task { await runPipeline() }
     }
 
@@ -71,7 +75,9 @@ struct TranscriptionRunnerView: View {
                             Array(TextSegmentation.words(in: sentence, language: recording.language.nlLanguage).enumerated()),
                             id: \.offset
                         ) { _, word in
-                            TranscriptWordToken(word: word, language: recording.language)
+                            TranscriptWordToken(word: word, language: recording.language) { entry in
+                                flashcardEntry = entry
+                            }
                         }
                     }
                 }
@@ -117,9 +123,10 @@ struct TranscriptionRunnerView: View {
 private struct TranscriptWordToken: View {
     let word: String
     let language: SupportedLanguage
+    let onSelectEntry: (VocabularyEntry) -> Void
 
     @State private var isSelected = false
-    @State private var didAdd = false
+    @State private var addedEntry: VocabularyEntry?
 
     var body: some View {
         Text(word)
@@ -136,7 +143,7 @@ private struct TranscriptWordToken: View {
             .popover(isPresented: $isSelected, arrowEdge: .top) {
                 popoverContent
                     .presentationCompactAdaptation(.popover)
-                    .onDisappear { didAdd = false }
+                    .onDisappear { addedEntry = nil }
             }
     }
 
@@ -145,10 +152,23 @@ private struct TranscriptWordToken: View {
         VStack(spacing: 10) {
             Text(word).font(.headline)
 
-            if didAdd {
+            if let addedEntry {
                 Label("Added to Vocabulary", systemImage: "checkmark.circle.fill")
                     .font(.subheadline)
                     .foregroundStyle(.green)
+
+                // Navigating straight from here (rather than via a
+                // NavigationLink inside this popover) avoids the popover's
+                // separate presentation context, which doesn't reliably push
+                // onto the presenting view's NavigationStack — dismiss first,
+                // then hand the entry back to the parent to navigate.
+                Button {
+                    isSelected = false
+                    onSelectEntry(addedEntry)
+                } label: {
+                    Label("View Flashcard", systemImage: "rectangle.on.rectangle")
+                }
+                .buttonStyle(.bordered)
             } else {
                 Button {
                     addToVocabulary()
@@ -164,8 +184,9 @@ private struct TranscriptWordToken: View {
 
     private func addToVocabulary() {
         var entries = VocabularyStore.load()
-        entries.insert(VocabularyEntry(id: UUID(), text: word, addedAt: .now, language: language), at: 0)
+        let entry = VocabularyEntry(id: UUID(), text: word, addedAt: .now, language: language)
+        entries.insert(entry, at: 0)
         VocabularyStore.save(entries)
-        didAdd = true
+        addedEntry = entry
     }
 }

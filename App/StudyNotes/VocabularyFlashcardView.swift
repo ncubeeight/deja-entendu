@@ -42,7 +42,7 @@ struct VocabularyFlashcardView: View {
                             .font(.system(size: 40, weight: .bold))
 
                         Button {
-                            speak()
+                            speak(entry.text)
                         } label: {
                             Image(systemName: "speaker.wave.2.fill")
                                 .font(.title2)
@@ -96,7 +96,16 @@ struct VocabularyFlashcardView: View {
             }
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("Example").font(.caption).foregroundStyle(.secondary)
+                HStack(spacing: 8) {
+                    Text("Example").font(.caption).foregroundStyle(.secondary)
+                    Button {
+                        speak(details.exampleSentence)
+                    } label: {
+                        Image(systemName: "speaker.wave.2.fill")
+                            .font(.caption)
+                    }
+                    .disabled(!isVoiceAvailable)
+                }
                 Text(highlighted(details.exampleSentence, term: entry.text))
                     .font(.body)
                 Text(details.exampleTranslation)
@@ -140,8 +149,15 @@ struct VocabularyFlashcardView: View {
         return AVSpeechSynthesisVoice(language: language.locale.identifier) != nil
     }
 
-    private func speak() {
-        let utterance = AVSpeechUtterance(string: entry.text)
+    private func speak(_ text: String) {
+        // The app never otherwise configures an audio session, so without
+        // this the default session category honors the hardware Silent/Ring
+        // switch — the speaker button would appear to do nothing on a
+        // muted device even though synthesis itself succeeded.
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+        try? AVAudioSession.sharedInstance().setActive(true)
+
+        let utterance = AVSpeechUtterance(string: text)
         if let language = entry.language {
             utterance.voice = AVSpeechSynthesisVoice(language: language.locale.identifier)
         }
