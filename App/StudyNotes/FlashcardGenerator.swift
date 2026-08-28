@@ -35,6 +35,41 @@ enum FlashcardError: LocalizedError {
     }
 }
 
+/// Apple's built-in Japanese reading dictionary — the same linguistic data
+/// that powers kana input and system text-to-speech — gives a real,
+/// dictionary-backed romaji reading for kanji. Far more reliable than
+/// asking the on-device LLM to guess one: that guess was inconsistent and
+/// sometimes Chinese-pinyin-flavored for kanji compounds (課題, correctly
+/// "kadai", came back as "kah-dshah" and later "kah-DEE-shuh" from the
+/// model — verified via a standalone script that CFStringTokenizer gets
+/// this, and five other real compounds, exactly right).
+enum JapaneseReading {
+    static func romaji(for text: String) -> String? {
+        let cfText = text as CFString
+        let length = CFStringGetLength(cfText)
+        guard length > 0 else { return nil }
+
+        let locale = CFLocaleCreate(kCFAllocatorDefault, CFLocaleIdentifier(rawValue: "ja-JP" as CFString))
+        let tokenizer = CFStringTokenizerCreate(
+            kCFAllocatorDefault,
+            cfText,
+            CFRangeMake(0, length),
+            kCFStringTokenizerUnitWordBoundary,
+            locale
+        )
+
+        var result = ""
+        var tokenType = CFStringTokenizerAdvanceToNextToken(tokenizer)
+        while !tokenType.isEmpty {
+            if let transcription = CFStringTokenizerCopyCurrentTokenAttribute(tokenizer, kCFStringTokenizerAttributeLatinTranscription) {
+                result += (transcription as! CFString) as String
+            }
+            tokenType = CFStringTokenizerAdvanceToNextToken(tokenizer)
+        }
+        return result.isEmpty ? nil : result
+    }
+}
+
 enum FlashcardGenerator {
 
     /// When the entry came from a tapped transcript word, `language` is
@@ -53,6 +88,14 @@ enum FlashcardGenerator {
             throw FlashcardError.modelUnavailable(String(describing: reason))
         }
 
+        let japaneseKanjiWarning = """
+         Japanese kanji are visually identical to Chinese hanzi, but their \
+        pronunciation is completely different — pronounce this using \
+        authentic Japanese on'yomi/kun'yomi readings (Hepburn romaji, e.g. \
+        課題 → 'ka-dai'), never Mandarin pinyin or Chinese-sounding \
+        consonant clusters like 'zh', 'q', 'x', or 'dsh'.
+        """
+
         let instructions: String
         if let language {
             instructions = """
@@ -64,7 +107,8 @@ enum FlashcardGenerator {
             sentence in \(language.displayName) using the term — plus that \
             sentence's English translation. The pronunciation guide must \
             cover the term's full length, every syllable from start to \
-            finish — never just a stem or the first part of a longer word.
+            finish — never just a stem or the first part of a longer word.\
+            \(language == .japanese ? japaneseKanjiWarning : "")
             """
         } else {
             instructions = """
@@ -74,7 +118,8 @@ enum FlashcardGenerator {
             sentence using the term in that language — plus that sentence's \
             English translation. The pronunciation guide must cover the \
             term's full length, every syllable from start to finish — never \
-            just a stem or the first part of a longer word.
+            just a stem or the first part of a longer word.\
+            \(japaneseKanjiWarning)
             """
         }
 
@@ -86,6 +131,10 @@ enum FlashcardGenerator {
             options: GenerationOptions(maximumResponseTokens: 300)
         )
 
-        return response.content
+        var details = response.content
+        if language == .japanese, let romaji = JapaneseReading.romaji(for: term) {
+            details.pronunciation = romaji
+        }
+        return details
     }
 }
