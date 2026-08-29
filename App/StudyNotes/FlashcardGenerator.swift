@@ -108,7 +108,14 @@ enum FlashcardGenerator {
             sentence's English translation. The pronunciation guide must \
             cover the term's full length, every syllable from start to \
             finish — never just a stem or the first part of a longer word.\
-            \(language == .japanese ? japaneseKanjiWarning : "")
+            \(language == .japanese ? japaneseKanjiWarning : "") \
+            The example sentence must be written entirely in \(language.displayName), \
+            in its native script, and must contain the term itself verbatim. \
+            It is NOT the translation field — never write an English dictionary \
+            definition or explanation there (e.g. for "library", writing \
+            "A library is a building that houses books..." would be wrong — \
+            write an actual \(language.displayName) sentence like "私は毎日図書館に \
+            行きます" instead). Only exampleTranslation may be in English.
             """
         } else {
             instructions = """
@@ -119,7 +126,12 @@ enum FlashcardGenerator {
             English translation. The pronunciation guide must cover the \
             term's full length, every syllable from start to finish — never \
             just a stem or the first part of a longer word.\
-            \(japaneseKanjiWarning)
+            \(japaneseKanjiWarning) \
+            The example sentence must be written entirely in the term's own \
+            language, in its native script, and must contain the term itself \
+            verbatim. It is NOT the translation field — never write an \
+            English dictionary definition or explanation there. Only \
+            exampleTranslation may be in English.
             """
         }
 
