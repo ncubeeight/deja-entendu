@@ -52,4 +52,37 @@ enum WordGlossGenerator {
 
         return response.content.englishGloss
     }
+
+    /// General-purpose counterpart to gloss(forWord:inLine:) — that one's
+    /// instructions are hardcoded to classical Japanese poetry for
+    /// IrohaExplorerView, so it isn't a fit for the Samples tab's tap-to-see
+    /// tooltip, which needs a quick gloss for any supported language.
+    static func gloss(forWord word: String, language: SupportedLanguage) async throws -> String {
+        let model = SystemLanguageModel.default
+
+        switch model.availability {
+        case .available:
+            break
+        case .unavailable(let reason):
+            throw WordGlossError.modelUnavailable(String(describing: reason))
+        }
+
+        let session = LanguageModelSession(
+            model: model,
+            instructions: """
+            You are a compact \(language.displayName)-to-English dictionary. \
+            Given a short word or phrase in \(language.displayName), respond \
+            with only a brief, plain English gloss for it — a few words, not \
+            a full sentence or definition.
+            """
+        )
+
+        let response = try await session.respond(
+            to: "Word: \(word)",
+            generating: WordGloss.self,
+            options: GenerationOptions(maximumResponseTokens: 60)
+        )
+
+        return response.content.englishGloss
+    }
 }

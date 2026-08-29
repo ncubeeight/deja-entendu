@@ -15,6 +15,21 @@ enum AppTheme {
     static let coralSoft = Color(hex: 0xFFE4DA)
     static let teal = Color(hex: 0x2BBAA3)
     static let tealSoft = Color(hex: 0xDFF6F1)
+    static let sky = Color(hex: 0x3D84D6)
+    static let skySoft = Color(hex: 0xE1EDFB)
+    static let gold = Color(hex: 0xE8A93D)
+    static let goldSoft = Color(hex: 0xFCEFD7)
+    static let lavender = Color(hex: 0x8B7CD6)
+    static let lavenderSoft = Color(hex: 0xEAE6FA)
+    static let rose = Color(hex: 0xE0609E)
+    static let roseSoft = Color(hex: 0xFBE3EE)
+
+    /// Soft backgrounds cycled across consecutive parsed words/tokens so
+    /// word boundaries stay visible even in scripts with no whitespace
+    /// between words (Japanese, Chinese) — the same six-hue set used
+    /// elsewhere just at reduced saturation, so it reads as an accent
+    /// rather than competing with the ink/coral UI.
+    static let rainbow: [Color] = [coralSoft, goldSoft, tealSoft, skySoft, lavenderSoft, roseSoft]
 
     // Matches the blue-green header gradient on the GitHub Pages site
     // (jekyll-theme-cayman's .page-header: linear-gradient(120deg, #155799, #159957)).

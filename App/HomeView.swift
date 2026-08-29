@@ -1,8 +1,7 @@
 import SwiftUI
 
-/// App root: a tab bar over the four main areas. Recordings, Vocabulary,
-/// and Settings are the existing screens, unchanged — Home is the only new
-/// screen, and it only surfaces data those screens already persist.
+/// App root: a tab bar over the four main areas. Samples merges audio,
+/// text, and image imports into one filterable list (see SamplesView).
 struct HomeView: View {
     @State private var selectedTab = 0
 
@@ -12,8 +11,8 @@ struct HomeView: View {
                 .tabItem { Label("Home", systemImage: "house") }
                 .tag(0)
 
-            VoiceMemoImportView()
-                .tabItem { Label("Audio Samples", systemImage: "waveform") }
+            SamplesView()
+                .tabItem { Label("Samples", systemImage: "tray.full") }
                 .tag(1)
 
             NavigationStack {

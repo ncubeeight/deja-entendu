@@ -11,9 +11,18 @@ struct HomeSummaryView: View {
     @Binding var selectedTab: Int
 
     @State private var vocabulary: [VocabularyEntry] = VocabularyStore.load()
-    @State private var recordings: [ImportedRecording] = ImportedRecordingStore.load()
+    @State private var samples: [AnySample] = HomeSummaryView.loadSamples()
     @State private var isAddActionSheetPresented = false
     @State private var isAddWordSheetPresented = false
+    @State private var isAddTextSheetPresented = false
+    @State private var isAddImageSheetPresented = false
+
+    private static func loadSamples() -> [AnySample] {
+        (ImportedRecordingStore.load().map(AnySample.audio)
+            + ImportedTextSampleStore.load().map(AnySample.text)
+            + ImportedImageSampleStore.load().map(AnySample.image))
+            .sorted { $0.importedAt > $1.importedAt }
+    }
 
     /// One sample word per supported language, shown only until the user
     /// has real vocabulary — a preview of what the feature does, not fake
@@ -49,8 +58,8 @@ struct HomeSummaryView: View {
             .background(AppTheme.background)
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
-            .navigationDestination(for: ImportedRecording.self) { recording in
-                TranscriptionRunnerView(recording: recording)
+            .navigationDestination(for: AnySample.self) { sample in
+                TranscriptionRunnerView(input: sample.runnerInput)
             }
             .navigationDestination(for: VocabularyEntry.self) { entry in
                 VocabularyFlashcardView(entry: entry)
@@ -66,10 +75,12 @@ struct HomeSummaryView: View {
             }
             .task {
                 vocabulary = VocabularyStore.load()
-                recordings = ImportedRecordingStore.load()
+                samples = Self.loadSamples()
             }
             .confirmationDialog("Add to Déjà Entendu", isPresented: $isAddActionSheetPresented, titleVisibility: .visible) {
                 Button("Import a Recording") { selectedTab = 1 }
+                Button("Add Text") { isAddTextSheetPresented = true }
+                Button("Scan Photo") { isAddImageSheetPresented = true }
                 Button("Add a Word") { isAddWordSheetPresented = true }
                 Button("Cancel", role: .cancel) {}
             }
@@ -78,15 +89,39 @@ struct HomeSummaryView: View {
             }) {
                 AddVocabularyWordView()
             }
+            .sheet(isPresented: $isAddTextSheetPresented, onDismiss: {
+                samples = Self.loadSamples()
+            }) {
+                TextImportView()
+            }
+            .sheet(isPresented: $isAddImageSheetPresented, onDismiss: {
+                samples = Self.loadSamples()
+            }) {
+                ImageImportView()
+            }
         }
     }
 
-    private func deleteRecording(_ recording: ImportedRecording) {
+    private func delete(_ sample: AnySample) {
         withAnimation {
-            recordings.removeAll { $0.id == recording.id }
+            samples.removeAll { $0.id == sample.id }
         }
-        ImportedRecordingStore.save(recordings)
-        try? FileManager.default.removeItem(at: recording.localURL)
+        switch sample {
+        case .audio(let recording):
+            var recordings = ImportedRecordingStore.load()
+            recordings.removeAll { $0.id == recording.id }
+            ImportedRecordingStore.save(recordings)
+            try? FileManager.default.removeItem(at: recording.localURL)
+        case .text(let textSample):
+            var entries = ImportedTextSampleStore.load()
+            entries.removeAll { $0.id == textSample.id }
+            ImportedTextSampleStore.save(entries)
+        case .image(let imageSample):
+            var entries = ImportedImageSampleStore.load()
+            entries.removeAll { $0.id == imageSample.id }
+            ImportedImageSampleStore.save(entries)
+            try? FileManager.default.removeItem(at: imageSample.localURL)
+        }
     }
 
     private func deleteVocabulary(_ entry: VocabularyEntry) {
@@ -127,8 +162,8 @@ struct HomeSummaryView: View {
                 .fontDesign(.rounded)
                 .foregroundStyle(AppTheme.ink)
 
-            if recordings.isEmpty {
-                Text("Recordings you import will show up here once they're saved between launches.")
+            if samples.isEmpty {
+                Text("Recordings, text, and photos you import will show up here once they're saved between launches.")
                     .font(.subheadline)
                     .foregroundStyle(AppTheme.inkSoft)
                     .padding(16)
@@ -137,16 +172,24 @@ struct HomeSummaryView: View {
                     .overlay(RoundedRectangle(cornerRadius: 18).stroke(AppTheme.line))
             } else {
                 VStack(spacing: 10) {
-                    ForEach(recordings.prefix(3)) { recording in
+                    ForEach(samples.prefix(3)) { sample in
                         HStack(spacing: 8) {
-                            NavigationLink(value: recording) {
-                                HStack {
+                            NavigationLink(value: sample) {
+                                HStack(spacing: 10) {
+                                    ZStack {
+                                        RoundedRectangle(cornerRadius: 9)
+                                            .fill(sample.kind.tintSoft)
+                                            .frame(width: 32, height: 32)
+                                        Image(systemName: sample.kind.icon)
+                                            .font(.system(size: 14, weight: .medium))
+                                            .foregroundStyle(sample.kind.tint)
+                                    }
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text(recording.originalFilename)
+                                        Text(sample.title)
                                             .font(.subheadline.weight(.semibold))
                                             .foregroundStyle(AppTheme.ink)
                                             .lineLimit(1)
-                                        Text("\(recording.language.displayName) · \(recording.importedAt.formatted(date: .abbreviated, time: .shortened))")
+                                        Text(sample.subtitle)
                                             .font(.caption)
                                             .foregroundStyle(AppTheme.inkSoft)
                                     }
@@ -159,7 +202,7 @@ struct HomeSummaryView: View {
                             .buttonStyle(.plain)
 
                             Button {
-                                deleteRecording(recording)
+                                delete(sample)
                             } label: {
                                 Image(systemName: "xmark.circle.fill")
                                     .font(.subheadline)

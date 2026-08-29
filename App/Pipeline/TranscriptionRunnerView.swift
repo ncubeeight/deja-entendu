@@ -1,12 +1,36 @@
 import SwiftUI
 
-/// End-to-end screen: takes an ImportedRecording (from either import path,
-/// already tagged with the language the user picked before importing), runs
-/// it through the transcriber for that language, then generates study notes
-/// (on-device LLM, best-effort). Transcripts stay in the language's original
-/// script — no automatic romanization.
+/// What TranscriptionRunnerView needs to run the shared transcript →
+/// vocabulary pipeline. Audio needs an actual transcription pass first;
+/// text and OCR'd image samples already have their text ready and skip
+/// straight to the shared part (segmentation, tap-to-add-vocabulary, study
+/// notes).
+enum SampleInput {
+    case audio(ImportedRecording)
+    case readyText(title: String, text: String, language: SupportedLanguage)
+
+    var title: String {
+        switch self {
+        case .audio(let recording): recording.originalFilename
+        case .readyText(let title, _, _): title
+        }
+    }
+
+    var language: SupportedLanguage {
+        switch self {
+        case .audio(let recording): recording.language
+        case .readyText(_, _, let language): language
+        }
+    }
+}
+
+/// End-to-end screen: takes a SampleInput (audio, ready to transcribe; or
+/// text/image, already resolved to plain text), runs whatever's needed to
+/// get a transcript, then generates study notes (on-device LLM,
+/// best-effort). Transcripts stay in the language's original script — no
+/// automatic romanization.
 struct TranscriptionRunnerView: View {
-    let recording: ImportedRecording
+    let input: SampleInput
 
     @State private var status: Status = .idle
     @State private var flashcardEntry: VocabularyEntry?
@@ -25,7 +49,7 @@ struct TranscriptionRunnerView: View {
             VStack(alignment: .leading, spacing: 16) {
                 switch status {
                 case .idle, .transcribing:
-                    ProgressView("Transcribing (\(recording.language.displayName))…")
+                    ProgressView(loadingLabel)
                         .frame(maxWidth: .infinity)
                         .padding(.top, 40)
 
@@ -50,11 +74,18 @@ struct TranscriptionRunnerView: View {
             }
             .padding()
         }
-        .navigationTitle(recording.originalFilename)
+        .navigationTitle(input.title)
         .navigationDestination(item: $flashcardEntry) { entry in
             VocabularyFlashcardView(entry: entry)
         }
         .task { await runPipeline() }
+    }
+
+    private var loadingLabel: String {
+        switch input {
+        case .audio: "Transcribing (\(input.language.displayName))…"
+        case .readyText: "Preparing (\(input.language.displayName))…"
+        }
     }
 
     @ViewBuilder
@@ -67,15 +98,19 @@ struct TranscriptionRunnerView: View {
 
             VStack(alignment: .leading, spacing: 14) {
                 ForEach(
-                    Array(TextSegmentation.sentences(in: result.fullText, language: recording.language.nlLanguage).enumerated()),
+                    Array(TextSegmentation.sentences(in: result.fullText, language: input.language.nlLanguage).enumerated()),
                     id: \.offset
                 ) { _, sentence in
                     FlowLayout(spacing: 4) {
                         ForEach(
-                            Array(TextSegmentation.words(in: sentence, language: recording.language.nlLanguage).enumerated()),
+                            Array(TextSegmentation.words(in: sentence, language: input.language.nlLanguage).enumerated()),
                             id: \.offset
-                        ) { _, word in
-                            TranscriptWordToken(word: word, language: recording.language) { entry in
+                        ) { index, word in
+                            TranscriptWordToken(
+                                word: word,
+                                language: input.language,
+                                background: AppTheme.rainbow[index % AppTheme.rainbow.count]
+                            ) { entry in
                                 flashcardEntry = entry
                             }
                         }
@@ -102,20 +137,31 @@ struct TranscriptionRunnerView: View {
     }
 
     private func runPipeline() async {
-        status = .transcribing
-        do {
-            let transcriber = SpeechTranscriberService(language: recording.language)
-            let result = try await transcriber.transcribe(fileAt: recording.localURL)
-            status = .transcribed(result)
-
+        switch input {
+        case .audio(let recording):
+            status = .transcribing
             do {
-                let notes = try await StudyNoteGenerator.generateNotes(forTranscript: result.fullText, language: recording.language)
-                status = .notesReady(result, notes: notes)
+                let transcriber = SpeechTranscriberService(language: recording.language)
+                let result = try await transcriber.transcribe(fileAt: recording.localURL)
+                status = .transcribed(result)
+                await generateNotes(for: result)
             } catch {
-                status = .notesUnavailable(result, reason: error.localizedDescription)
+                status = .failed(error.localizedDescription)
             }
+
+        case .readyText(_, let text, _):
+            let result = TranscriptionResult(fullText: text, segments: [])
+            status = .transcribed(result)
+            await generateNotes(for: result)
+        }
+    }
+
+    private func generateNotes(for result: TranscriptionResult) async {
+        do {
+            let notes = try await StudyNoteGenerator.generateNotes(forTranscript: result.fullText, language: input.language)
+            status = .notesReady(result, notes: notes)
         } catch {
-            status = .failed(error.localizedDescription)
+            status = .notesUnavailable(result, reason: error.localizedDescription)
         }
     }
 }
@@ -123,17 +169,25 @@ struct TranscriptionRunnerView: View {
 private struct TranscriptWordToken: View {
     let word: String
     let language: SupportedLanguage
+    let background: Color
     let onSelectEntry: (VocabularyEntry) -> Void
 
     @State private var isSelected = false
     @State private var addedEntry: VocabularyEntry?
+    @State private var glossState: GlossState = .loading
+
+    private enum GlossState {
+        case loading
+        case ready(String)
+        case failed
+    }
 
     var body: some View {
         Text(word)
             .padding(.horizontal, 3)
             .padding(.vertical, 1)
             .background(
-                isSelected ? Color.accentColor.opacity(0.22) : .clear,
+                isSelected ? Color.accentColor.opacity(0.22) : background,
                 in: RoundedRectangle(cornerRadius: 5)
             )
             .contentShape(Rectangle())
@@ -144,6 +198,10 @@ private struct TranscriptWordToken: View {
                 popoverContent
                     .presentationCompactAdaptation(.popover)
                     .onDisappear { addedEntry = nil }
+                    .task {
+                        guard case .loading = glossState else { return }
+                        await loadGloss()
+                    }
             }
     }
 
@@ -151,6 +209,18 @@ private struct TranscriptWordToken: View {
     private var popoverContent: some View {
         VStack(spacing: 10) {
             Text(word).font(.headline)
+
+            switch glossState {
+            case .loading:
+                ProgressView()
+                    .controlSize(.small)
+            case .ready(let gloss):
+                Text(gloss)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            case .failed:
+                EmptyView()
+            }
 
             if let addedEntry {
                 Label("Added to Vocabulary", systemImage: "checkmark.circle.fill")
@@ -180,6 +250,15 @@ private struct TranscriptWordToken: View {
         }
         .padding()
         .frame(minWidth: 220)
+    }
+
+    private func loadGloss() async {
+        do {
+            let gloss = try await WordGlossGenerator.gloss(forWord: word, language: language)
+            glossState = .ready(gloss)
+        } catch {
+            glossState = .failed
+        }
     }
 
     private func addToVocabulary() {
