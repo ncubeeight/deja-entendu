@@ -28,6 +28,23 @@ struct IrohaExplorerView: View {
         Color(red: 0.75, green: 0.09, blue: 0.46),  // magenta
     ]
 
+    /// Flattened so the poem can wrap to fill each line naturally (FlowLayout)
+    /// instead of being locked to a fixed 2-words-per-row grid — the couplet
+    /// breaks were a layout artifact, not a meaningful word boundary, so
+    /// flattening loses nothing while freeing up vertical space below.
+    private var allWords: [(word: String, line: String, color: Color)] {
+        var result: [(word: String, line: String, color: Color)] = []
+        var globalIndex = 0
+        for words in lines {
+            let line = words.joined()
+            for word in words {
+                result.append((word, line, Self.palette[globalIndex % Self.palette.count]))
+                globalIndex += 1
+            }
+        }
+        return result
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -37,21 +54,18 @@ struct IrohaExplorerView: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
 
-                ForEach(Array(lines.enumerated()), id: \.offset) { row, words in
-                    HStack(spacing: 0) {
-                        ForEach(Array(words.enumerated()), id: \.offset) { col, word in
-                            WordToken(
-                                word: word,
-                                line: words.joined(),
-                                color: Self.color(forRow: row, col: col, in: words)
-                            )
-                        }
+                FlowLayout(spacing: 6) {
+                    ForEach(Array(allWords.enumerated()), id: \.offset) { _, item in
+                        WordToken(word: item.word, line: item.line, color: item.color)
                     }
                 }
+                .padding(.horizontal, 24)
 
                 Link("Japanese Iroha poem", destination: URL(string: "https://en.wikipedia.org/wiki/Iroha")!)
                     .font(.footnote)
                     .padding(.top, 12)
+
+                usageGuidelines
             }
             .padding(.vertical, 32)
         }
@@ -59,9 +73,22 @@ struct IrohaExplorerView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    private static func color(forRow row: Int, col: Int, in words: [String]) -> Color {
-        let globalIndex = row * 2 + col  // every line here has exactly 2 words
-        return palette[globalIndex % palette.count]
+    @ViewBuilder
+    private var usageGuidelines: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Usage Guidelines:")
+                .font(.headline)
+
+            Text("Use the Samples tab to import an image, audio file or sample text from somewhere on your phone of the language you want to study. Declare the language you think the text or audio is in in order to instruct the translation engine of the target language. Once the sample image has been translated on device by your phone's “Apple Intelligence” language model, you can add any term on that page to a list of Vocabulary as individual flash cards.")
+
+            Text("When you want to review your previously seen text and previously seen audio terms later, click directly into Vocabulary tab and select the speak icon to have your device give you the suggested pronunciation of the term and an example sentence. Delete any flashcards once you're done studying.")
+
+            Text("You can add multiple languages in your uploader list by selecting others the Settings tab. A sample in the app processes only one language at a time.")
+
+            Text("Thank you for using Déjà Entendu!")
+        }
+        .font(.subheadline)
+        .padding(.horizontal, 24)
     }
 }
 
