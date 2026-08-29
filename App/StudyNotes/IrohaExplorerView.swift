@@ -77,7 +77,7 @@ struct IrohaExplorerView: View {
     private var usageGuidelines: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Usage Guidelines:")
-                .font(.headline)
+                .font(.title2.bold())
 
             Text("Use the Samples tab to import an image, audio file or sample text from somewhere on your phone of the language you want to study. Declare the language you think the text or audio is in in order to instruct the translation engine of the target language. Once the sample image has been translated on device by your phone's “Apple Intelligence” language model, you can add any term on that page to a list of Vocabulary as individual flash cards.")
 
@@ -87,7 +87,7 @@ struct IrohaExplorerView: View {
 
             Text("Thank you for using Déjà Entendu!")
         }
-        .font(.subheadline)
+        .font(.body)
         .padding(.horizontal, 24)
     }
 }
@@ -109,7 +109,7 @@ private struct WordToken: View {
 
     var body: some View {
         Text(word)
-            .font(.system(size: 30))
+            .font(.system(size: 20))
             .foregroundStyle(color)
             .padding(.horizontal, 3)
             .padding(.vertical, 2)
