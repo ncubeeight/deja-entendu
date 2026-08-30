@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="iconGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3B1368"/>
+      <stop offset="0.55" stop-color="#9A3FA8"/>
+      <stop offset="1" stop-color="#FFC94A"/>
+    </linearGradient>
+    <radialGradient id="iconGlow" cx="0.85" cy="0.15" r="0.6">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="iconSquircle">
+      <path d="M100,4 C170,4 196,30 196,100 C196,170 170,196 100,196 C30,196 4,170 4,100 C4,30 30,4 100,4 Z"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#iconSquircle)">
+    <rect width="200" height="200" fill="url(#iconGradient)"/>
+    <rect width="200" height="200" fill="url(#iconGlow)"/>
+    <path d="
+      M46,50 Q34,50 34,62 L34,124 Q34,136 46,136 L52,136 L44,152 L68,136
+      L154,136 Q166,136 166,124 L166,62 Q166,50 154,50 Z"
+      fill="#FFFFFF"/>
+    <!-- camera -->
+    <rect x="46" y="66" width="24" height="18" rx="4" fill="url(#iconGradient)"/>
+    <rect x="54" y="62" width="8" height="5" rx="1.5" fill="url(#iconGradient)"/>
+    <circle cx="58" cy="75" r="5.5" fill="#FFFFFF"/>
+    <!-- microphone -->
+    <rect x="52" y="92" width="12" height="18" rx="6" fill="url(#iconGradient)"/>
+    <path d="M46,102 a12,12 0 0 0 24,0" stroke="url(#iconGradient)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <line x1="58" y1="114" x2="58" y2="119" stroke="url(#iconGradient)" stroke-width="3" stroke-linecap="round"/>
+    <line x1="52" y1="119" x2="64" y2="119" stroke="url(#iconGradient)" stroke-width="3" stroke-linecap="round"/>
+    <!-- organic swirl -->
+    <g transform="translate(95,94)">
+      <path d="M0,-13 A13,13 0 0,1 0,13 A6.2,6.2 0 0,0 0,0.6 A6.2,6.2 0 0,1 0,-13 Z" fill="url(#iconGradient)"/>
+      <path d="M0,-13 A13,13 0 0,1 0,13 A6.2,6.2 0 0,0 0,0.6 A6.2,6.2 0 0,1 0,-13 Z" fill="url(#iconGradient)" transform="rotate(180)"/>
+    </g>
+    <!-- glyphs -->
+    <text x="134" y="86" font-family="'SF Pro Display', Arial, sans-serif" font-weight="700" font-size="26" fill="url(#iconGradient)" text-anchor="middle">A</text>
+    <text x="134" y="114" font-family="'Hiragino Sans', 'Noto Sans JP', sans-serif" font-weight="600" font-size="24" fill="url(#iconGradient)" text-anchor="middle">あ</text>
+  </g>
+</svg>
