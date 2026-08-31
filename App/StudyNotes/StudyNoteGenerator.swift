@@ -11,9 +11,6 @@ struct StudyNotes {
 
     @Guide(description: "Up to 5 notable vocabulary words or phrases from the transcript, written in their original script.", .maximumCount(5))
     var keyVocabulary: [String]
-
-    @Guide(description: "One short, encouraging note about grammar or phrasing, max 2 sentences.")
-    var grammarNote: String
 }
 
 enum StudyNoteError: LocalizedError {
@@ -44,9 +41,11 @@ enum StudyNoteGenerator {
         let session = LanguageModelSession(
             model: model,
             instructions: """
-            You help a student studying \(language.displayName). Given a transcript of \
-            their spoken practice, translate it and give brief, encouraging feedback. \
-            Keep responses short.
+            You help a student studying \(language.displayName). Given a transcript, \
+            translate it into English and pull out notable vocabulary. Only translate \
+            and extract — do not comment on, evaluate, or offer feedback about the \
+            content, correctness, or meaning of the transcript; you don't know the \
+            context it came from.
             """
         )
 

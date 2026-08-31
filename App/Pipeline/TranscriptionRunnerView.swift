@@ -130,9 +130,6 @@ struct TranscriptionRunnerView: View {
             ForEach(notes.keyVocabulary, id: \.self) { word in
                 Text("• \(word)")
             }
-
-            Text("Note").font(.headline).padding(.top, 4)
-            Text(notes.grammarNote)
         }
     }
 
