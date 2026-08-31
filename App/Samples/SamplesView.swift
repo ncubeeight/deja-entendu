@@ -16,6 +16,12 @@ struct SamplesView: View {
     @State private var isTextImportPresented = false
     @State private var isImageImportPresented = false
 
+    // Generated-sample state.
+    @State private var isGenerateLanguageSheetPresented = false
+    @State private var pendingGenerateLanguage: SupportedLanguage = .chineseTraditional
+    @State private var isGeneratingSample = false
+    @State private var generateError: String?
+
     // Audio-specific import state, ported from the old VoiceMemoImportView.
     @State private var isPickerPresented = false
     @State private var isLanguageSheetPresented = false
@@ -85,6 +91,21 @@ struct SamplesView: View {
                     row(for: sample)
                 }
             }
+            .overlay {
+                if isGeneratingSample {
+                    ZStack {
+                        Color.black.opacity(0.15).ignoresSafeArea()
+                        VStack(spacing: 12) {
+                            ProgressView()
+                            Text("Generating sample…")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(24)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+                    }
+                }
+            }
             .safeAreaInset(edge: .top) {
                 Picker("Filter", selection: $filter) {
                     ForEach(SampleFilter.allCases, id: \.self) { filter in
@@ -116,6 +137,7 @@ struct SamplesView: View {
                 }
                 Button("Add Text") { isTextImportPresented = true }
                 Button("Scan Photo") { isImageImportPresented = true }
+                Button("Generate Sample") { presentGenerateLanguageSheet() }
                 Button("Cancel", role: .cancel) {}
             }
             .fileImporter(
@@ -127,6 +149,9 @@ struct SamplesView: View {
             }
             .sheet(isPresented: $isLanguageSheetPresented) {
                 languageSelectionSheet
+            }
+            .sheet(isPresented: $isGenerateLanguageSheetPresented) {
+                generateLanguageSelectionSheet
             }
             .sheet(isPresented: $isTextImportPresented, onDismiss: {
                 textSamples = ImportedTextSampleStore.load()
@@ -156,6 +181,11 @@ struct SamplesView: View {
                 Button("OK") { importError = nil }
             }, message: {
                 Text(importError ?? "")
+            })
+            .alert("Generation failed", isPresented: .constant(generateError != nil), actions: {
+                Button("OK") { generateError = nil }
+            }, message: {
+                Text(generateError ?? "")
             })
         }
     }
@@ -261,6 +291,60 @@ struct SamplesView: View {
             pendingLanguage = enabledLanguages.first ?? .chineseTraditional
         }
         isLanguageSheetPresented = true
+    }
+
+    @ViewBuilder
+    private var generateLanguageSelectionSheet: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Picker("Language", selection: $pendingGenerateLanguage) {
+                        ForEach(enabledLanguages, id: \.self) { language in
+                            Text(language.displayName).tag(language)
+                        }
+                    }
+                    .pickerStyle(.inline)
+                } header: {
+                    Text("What language would you like the sample in?")
+                } footer: {
+                    Text("A short, simple practice paragraph will be generated on-device — no recording or file needed.")
+                }
+            }
+            .navigationTitle("Choose Language")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { isGenerateLanguageSheetPresented = false }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Generate") {
+                        isGenerateLanguageSheetPresented = false
+                        Task { await generateSample() }
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+
+    private func presentGenerateLanguageSheet() {
+        if !enabledLanguages.contains(pendingGenerateLanguage) {
+            pendingGenerateLanguage = enabledLanguages.first ?? .chineseTraditional
+        }
+        isGenerateLanguageSheetPresented = true
+    }
+
+    private func generateSample() async {
+        isGeneratingSample = true
+        do {
+            let text = try await SampleTextGenerator.generateParagraph(language: pendingGenerateLanguage)
+            let sample = ImportedTextSample(id: UUID(), body: text, importedAt: .now, language: pendingGenerateLanguage)
+            textSamples.insert(sample, at: 0)
+            ImportedTextSampleStore.save(textSamples)
+        } catch {
+            generateError = error.localizedDescription
+        }
+        isGeneratingSample = false
     }
 
     private func handlePickerResult(_ result: Result<[URL], Error>, language: SupportedLanguage) {

@@ -42,6 +42,7 @@
 		CC89ABD3012341C29FFCEEC8 /* FlashcardGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6918E083C67DB08FEAAA331 /* FlashcardGenerator.swift */; };
 		CCC99BA07416940EC74E6C78 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82F10D3493959AFBE24EE55 /* AppTheme.swift */; };
 		D9AB589FE6E3A4209AFD8993 /* ImportedTextSampleStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2D17CA92068C6A51894D2BE /* ImportedTextSampleStore.swift */; };
+		E10D8237FDB27C68FB8225F7 /* SampleTextGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75709728282290EBEA77AAE6 /* SampleTextGenerator.swift */; };
 		E83036AEB3873C15437896BC /* AudioTranscoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4436C189F27EDA7AD4F93AFB /* AudioTranscoder.swift */; };
 		F5144C6225E892056450FCD4 /* ImageIngestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DE32ACD2CF7A4D7EE87328 /* ImageIngestion.swift */; };
 		F6CAFEF06BA6318E3BC9C464 /* WordGlossGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36497FF3E478215B6B0196F9 /* WordGlossGenerator.swift */; };
@@ -93,6 +94,7 @@
 		5D7C91F03475E5BE03BD8EC2 /* AddToDejaEntendu.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = AddToDejaEntendu.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		6440D69292ACCD843EC41B7F /* ImportedRecordingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportedRecordingStore.swift; sourceTree = "<group>"; };
 		654D8ADF7B7D91BD35289A09 /* ImportedImageSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportedImageSample.swift; sourceTree = "<group>"; };
+		75709728282290EBEA77AAE6 /* SampleTextGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleTextGenerator.swift; sourceTree = "<group>"; };
 		9097D3B807C2021D8C5C6E0D /* ImportedRecording.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportedRecording.swift; sourceTree = "<group>"; };
 		9453282B623D19EFE79CC6A0 /* FlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowLayout.swift; sourceTree = "<group>"; };
 		98E767063B7F412349B1C30D /* HomeSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeSummaryView.swift; sourceTree = "<group>"; };
@@ -185,6 +187,7 @@
 			children = (
 				1B3BF8F0E9050EE05E44893D /* AnySample.swift */,
 				C73E6F801309AF213CFBBCA2 /* SamplesView.swift */,
+				75709728282290EBEA77AAE6 /* SampleTextGenerator.swift */,
 			);
 			path = Samples;
 			sourceTree = "<group>";
@@ -367,6 +370,7 @@
 				395A311BB2EA35B39E0A324B /* IrohaExplorerView.swift in Sources */,
 				75CCB407447E900359D8053E /* PinyinConverter.swift in Sources */,
 				936DA7774EF26E9B2853F17C /* SampleKind.swift in Sources */,
+				E10D8237FDB27C68FB8225F7 /* SampleTextGenerator.swift in Sources */,
 				AEB3EE02C6A968B359CD9AC6 /* SamplesView.swift in Sources */,
 				4BD2C3C830E13087C9D8A09C /* SettingsView.swift in Sources */,
 				F9A9E6B14BAFDA3DDB9061C3 /* SharedContainer.swift in Sources */,
