@@ -24,6 +24,10 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
     case norwegian
     case swedish
     case turkish
+    case english
+    case bengali
+    case punjabi
+    case urdu
 
     var locale: Locale {
         switch self {
@@ -65,6 +69,14 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
             Locale(identifier: "sv-SE")
         case .turkish:
             Locale(identifier: "tr-TR")
+        case .english:
+            Locale(identifier: "en-US")
+        case .bengali:
+            Locale(identifier: "bn-IN")
+        case .punjabi:
+            Locale(identifier: "pa-IN")
+        case .urdu:
+            Locale(identifier: "ur-PK")
         }
     }
 
@@ -92,6 +104,10 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
         case .norwegian: .norwegian
         case .swedish: .swedish
         case .turkish: .turkish
+        case .english: .english
+        case .bengali: .bengali
+        case .punjabi: .punjabi
+        case .urdu: .urdu
         }
     }
 
@@ -116,6 +132,10 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
         case .norwegian: "Norwegian"
         case .swedish: "Swedish"
         case .turkish: "Turkish"
+        case .english: "English"
+        case .bengali: "Bengali"
+        case .punjabi: "Punjabi"
+        case .urdu: "Urdu"
         }
     }
 }
