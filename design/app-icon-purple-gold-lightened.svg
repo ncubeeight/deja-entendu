@@ -2,8 +2,8 @@
   <defs>
     <linearGradient id="iconGradient" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#3B1368"/>
-      <stop offset="0.55" stop-color="#9A3FA8"/>
-      <stop offset="1" stop-color="#FFC94A"/>
+      <stop offset="0.32" stop-color="#9A3FA8"/>
+      <stop offset="1" stop-color="#FFC300"/>
     </linearGradient>
     <radialGradient id="iconGlow" cx="0.85" cy="0.15" r="0.6">
       <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.35"/>
@@ -17,25 +17,25 @@
     <rect width="200" height="200" fill="url(#iconGradient)"/>
     <rect width="200" height="200" fill="url(#iconGlow)"/>
     <path d="
-      M46,50 Q34,50 34,62 L34,124 Q34,136 46,136 L52,136 L44,152 L68,136
-      L154,136 Q166,136 166,124 L166,62 Q166,50 154,50 Z"
+      M46,34 Q34,34 34,46 L34,154 Q34,166 46,166 L52,166 L44,182 L68,166
+      L154,166 Q166,166 166,154 L166,46 Q166,34 154,34 Z"
       fill="#FFFFFF"/>
     <!-- camera -->
-    <rect x="46" y="66" width="24" height="18" rx="4" fill="url(#iconGradient)"/>
-    <rect x="54" y="62" width="8" height="5" rx="1.5" fill="url(#iconGradient)"/>
-    <circle cx="58" cy="75" r="5.5" fill="#FFFFFF"/>
+    <rect x="46" y="58" width="24" height="18" rx="4" fill="url(#iconGradient)"/>
+    <rect x="54" y="54" width="8" height="5" rx="1.5" fill="url(#iconGradient)"/>
+    <circle cx="58" cy="67" r="5.5" fill="#FFFFFF"/>
     <!-- microphone -->
-    <rect x="52" y="92" width="12" height="18" rx="6" fill="url(#iconGradient)"/>
-    <path d="M46,102 a12,12 0 0 0 24,0" stroke="url(#iconGradient)" stroke-width="3" fill="none" stroke-linecap="round"/>
-    <line x1="58" y1="114" x2="58" y2="119" stroke="url(#iconGradient)" stroke-width="3" stroke-linecap="round"/>
-    <line x1="52" y1="119" x2="64" y2="119" stroke="url(#iconGradient)" stroke-width="3" stroke-linecap="round"/>
+    <rect x="51" y="123" width="14" height="20" rx="7" fill="url(#iconGradient)"/>
+    <path d="M45,135 a13,13 0 0 0 26,0" stroke="url(#iconGradient)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <line x1="58" y1="148" x2="58" y2="154" stroke="url(#iconGradient)" stroke-width="3" stroke-linecap="round"/>
+    <line x1="51" y1="154" x2="65" y2="154" stroke="url(#iconGradient)" stroke-width="3" stroke-linecap="round"/>
     <!-- organic swirl -->
-    <g transform="translate(95,94)">
-      <path d="M0,-13 A13,13 0 0,1 0,13 A6.2,6.2 0 0,0 0,0.6 A6.2,6.2 0 0,1 0,-13 Z" fill="url(#iconGradient)"/>
-      <path d="M0,-13 A13,13 0 0,1 0,13 A6.2,6.2 0 0,0 0,0.6 A6.2,6.2 0 0,1 0,-13 Z" fill="url(#iconGradient)" opacity="0.4" transform="rotate(180)"/>
+    <g transform="translate(97,100)">
+      <path d="M0,-16 A16,16 0 0,1 0,16 A7.6,7.6 0 0,0 0,0.7 A7.6,7.6 0 0,1 0,-16 Z" fill="url(#iconGradient)"/>
+      <path d="M0,-16 A16,16 0 0,1 0,16 A7.6,7.6 0 0,0 0,0.7 A7.6,7.6 0 0,1 0,-16 Z" fill="url(#iconGradient)" opacity="0.4" transform="rotate(180)"/>
     </g>
     <!-- glyphs -->
-    <text x="134" y="86" font-family="'SF Pro Display', Arial, sans-serif" font-weight="700" font-size="26" fill="url(#iconGradient)" text-anchor="middle">A</text>
-    <text x="134" y="114" font-family="'Hiragino Sans', 'Noto Sans JP', sans-serif" font-weight="600" font-size="24" fill="url(#iconGradient)" text-anchor="middle">あ</text>
+    <text x="136" y="76" font-family="'SF Pro Display', Arial, sans-serif" font-weight="700" font-size="30" fill="url(#iconGradient)" text-anchor="middle">A</text>
+    <text x="136" y="149" font-family="'Hiragino Sans', 'Noto Sans JP', sans-serif" font-weight="600" font-size="28" fill="url(#iconGradient)" text-anchor="middle">あ</text>
   </g>
 </svg>
