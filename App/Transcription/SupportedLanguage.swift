@@ -32,6 +32,15 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
     case hebrew
     case russian
     case ukrainian
+    case indonesian
+    case marathi
+    case swahili
+    case tagalog
+    case yoruba
+    case quechua
+    case telugu
+    case kannada
+    case amharic
 
     var locale: Locale {
         switch self {
@@ -89,12 +98,37 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
             Locale(identifier: "ru-RU")
         case .ukrainian:
             Locale(identifier: "uk-UA")
+        case .indonesian:
+            Locale(identifier: "id-ID")
+        case .marathi:
+            Locale(identifier: "mr-IN")
+        case .swahili:
+            Locale(identifier: "sw-KE")
+        case .tagalog:
+            Locale(identifier: "tl-PH")
+        case .yoruba:
+            Locale(identifier: "yo-NG")
+        case .quechua:
+            Locale(identifier: "qu-PE")
+        case .telugu:
+            Locale(identifier: "te-IN")
+        case .kannada:
+            Locale(identifier: "kn-IN")
+        case .amharic:
+            Locale(identifier: "am-ET")
         }
     }
 
     /// For NLTokenizer — telling it the language up front gives more
     /// reliable word/sentence segmentation than auto-detection, especially
     /// for Chinese/Japanese where there's no whitespace to fall back on.
+    /// Swahili, Tagalog, Yoruba, and Quechua have no NLLanguage constant at
+    /// all (checked the full list in the SDK header, not just a naming
+    /// mismatch) — they fall back to .undetermined, Apple's own value for
+    /// exactly this case, which uses generic script/whitespace-based
+    /// segmentation. Since all four are Latin-script, space-delimited
+    /// languages, this should still segment reasonably, just without the
+    /// language-specific tuning the other cases get.
     var nlLanguage: NLLanguage {
         switch self {
         case .chineseTraditional: .traditionalChinese
@@ -124,6 +158,15 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
         case .hebrew: .hebrew
         case .russian: .russian
         case .ukrainian: .ukrainian
+        case .indonesian: .indonesian
+        case .marathi: .marathi
+        case .swahili: .undetermined
+        case .tagalog: .undetermined
+        case .yoruba: .undetermined
+        case .quechua: .undetermined
+        case .telugu: .telugu
+        case .kannada: .kannada
+        case .amharic: .amharic
         }
     }
 
@@ -156,6 +199,15 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
         case .hebrew: "Hebrew"
         case .russian: "Russian"
         case .ukrainian: "Ukrainian"
+        case .indonesian: "Indonesian"
+        case .marathi: "Marathi"
+        case .swahili: "Swahili"
+        case .tagalog: "Tagalog"
+        case .yoruba: "Yoruba"
+        case .quechua: "Quechua"
+        case .telugu: "Telugu"
+        case .kannada: "Kannada"
+        case .amharic: "Amharic"
         }
     }
 }
