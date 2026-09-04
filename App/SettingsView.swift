@@ -29,8 +29,25 @@ struct SettingsView: View {
             } header: {
                 Text("Appearance")
             }
+
+            Section {
+                Text(versionLabel)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
         }
         .navigationTitle("Settings")
+    }
+
+    /// "Version 1.0 Build 25" rather than a single dotted "1.0.25" —
+    /// reads straight from the bundle (CFBundleShortVersionString /
+    /// CFBundleVersion) so it always matches the running build with no
+    /// manual sync needed as the build number increments.
+    private var versionLabel: String {
+        let info = Bundle.main.infoDictionary
+        let shortVersion = info?["CFBundleShortVersionString"] as? String ?? "—"
+        let buildNumber = info?["CFBundleVersion"] as? String ?? "—"
+        return "Version \(shortVersion) Build \(buildNumber)"
     }
 
     private func binding(for language: SupportedLanguage) -> Binding<Bool> {
