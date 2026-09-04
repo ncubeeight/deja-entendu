@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import UIKit
 
 /// A dedicated page for one vocabulary term: pronunciation, translation, and
 /// an example sentence with the term highlighted. Generated on-device the
@@ -9,6 +10,7 @@ struct VocabularyFlashcardView: View {
 
     @State private var status: Status
     @State private var speechSynthesizer = AVSpeechSynthesizer()
+    @State private var isDictionarySheetPresented = false
 
     private enum Status {
         case loading
@@ -64,9 +66,30 @@ struct VocabularyFlashcardView: View {
                         .padding(.top, 24)
 
                 case .failed(let reason):
-                    Text(reason)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(reason)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+
+                        // On-device generation needs Apple Intelligence
+                        // (iPhone 15 Pro/16/17 or later) — this is the
+                        // fallback for everyone else: the system Dictionary
+                        // app's own lookup, which has shipped since iOS 5
+                        // and needs nothing beyond a matching dictionary the
+                        // user has installed (Settings > General >
+                        // Dictionary). It's a different, plainer UI than the
+                        // rest of this screen — Apple's own sheet, not
+                        // something we can restyle to match — but it beats
+                        // a dead end for older devices.
+                        if UIReferenceLibraryViewController.dictionaryHasDefinition(forTerm: entry.text) {
+                            Button {
+                                isDictionarySheetPresented = true
+                            } label: {
+                                Label("Look Up in Dictionary", systemImage: "character.book.closed")
+                            }
+                            .buttonStyle(.borderedProminent)
+                        }
+                    }
 
                 case .ready(let details):
                     detailsBlock(details)
@@ -76,6 +99,10 @@ struct VocabularyFlashcardView: View {
         }
         .navigationTitle("Flashcard")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $isDictionarySheetPresented) {
+            DictionaryLookupView(term: entry.text)
+                .ignoresSafeArea()
+        }
         .task {
             guard !entry.hasFlashcardDetails else { return }
             await generate()
@@ -182,6 +209,19 @@ struct VocabularyFlashcardView: View {
             status = .failed(error.localizedDescription)
         }
     }
+}
+
+/// Wraps the system Dictionary app's own lookup UI (UIReferenceLibraryViewController)
+/// so it can be presented as a SwiftUI sheet — no on-device LLM required, so
+/// this works on any device, including ones without Apple Intelligence.
+private struct DictionaryLookupView: UIViewControllerRepresentable {
+    let term: String
+
+    func makeUIViewController(context: Context) -> UIReferenceLibraryViewController {
+        UIReferenceLibraryViewController(term: term)
+    }
+
+    func updateUIViewController(_ uiViewController: UIReferenceLibraryViewController, context: Context) {}
 }
 
 #Preview {
