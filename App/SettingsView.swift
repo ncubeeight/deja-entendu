@@ -21,6 +21,16 @@ struct SettingsView: View {
             }
 
             Section {
+                NavigationLink {
+                    CustomGlossaryView()
+                } label: {
+                    Label("Custom Glossary", systemImage: "character.book.closed")
+                }
+            } footer: {
+                Text("Add your own term definitions — useful for specialized vocabulary an on-device model might not know, and still works on devices without one.")
+            }
+
+            Section {
                 Picker("Appearance", selection: $colorSchemeRaw) {
                     ForEach(AppColorScheme.allCases, id: \.self) { scheme in
                         Text(scheme.displayName).tag(scheme.rawValue)

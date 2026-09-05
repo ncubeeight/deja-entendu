@@ -20,6 +20,7 @@
 		4BD2C3C830E13087C9D8A09C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB97030EE7AF1FA03613B818 /* SettingsView.swift */; };
 		51F93B6E291A26AE2417EB15 /* ImageImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F7CDA6E7635DCCD37D446B /* ImageImportView.swift */; };
 		531CFFE2A135F991C5E2349B /* HomeSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98E767063B7F412349B1C30D /* HomeSummaryView.swift */; };
+		5CBECAC8BC845A6A697C8A9E /* GlossaryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81CE372796F5C35EB9AEE106 /* GlossaryEntry.swift */; };
 		60BED0A232FDDCD645DE9000 /* SupportedLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B853B1C7C82C455A6977DCE /* SupportedLanguage.swift */; };
 		635476BF673B235B3805E1E7 /* ImportedRecordingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6440D69292ACCD843EC41B7F /* ImportedRecordingStore.swift */; };
 		63673C8FAC2E483D6726F630 /* ImportedRecording.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9097D3B807C2021D8C5C6E0D /* ImportedRecording.swift */; };
@@ -39,11 +40,13 @@
 		AEB3EE02C6A968B359CD9AC6 /* SamplesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C73E6F801309AF213CFBBCA2 /* SamplesView.swift */; };
 		AF18FE5F3D4125A28382DEB3 /* AddVocabularyWordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD6D200A8D247A5D5469DE2F /* AddVocabularyWordView.swift */; };
 		B5151C51163BD857B98D4AE4 /* ImportedImageSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 654D8ADF7B7D91BD35289A09 /* ImportedImageSample.swift */; };
+		BEF05F71106D3A9CC44CB608 /* GlossaryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 762F1CE37E8890716E60F73D /* GlossaryStore.swift */; };
 		CC89ABD3012341C29FFCEEC8 /* FlashcardGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6918E083C67DB08FEAAA331 /* FlashcardGenerator.swift */; };
 		CCC99BA07416940EC74E6C78 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82F10D3493959AFBE24EE55 /* AppTheme.swift */; };
 		D9AB589FE6E3A4209AFD8993 /* ImportedTextSampleStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2D17CA92068C6A51894D2BE /* ImportedTextSampleStore.swift */; };
 		E10D8237FDB27C68FB8225F7 /* SampleTextGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75709728282290EBEA77AAE6 /* SampleTextGenerator.swift */; };
 		E83036AEB3873C15437896BC /* AudioTranscoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4436C189F27EDA7AD4F93AFB /* AudioTranscoder.swift */; };
+		F2D815283F6F7F074E9FFA0D /* CustomGlossaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9912378565F63C92DFED79EA /* CustomGlossaryView.swift */; };
 		F5144C6225E892056450FCD4 /* ImageIngestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DE32ACD2CF7A4D7EE87328 /* ImageIngestion.swift */; };
 		F6CAFEF06BA6318E3BC9C464 /* WordGlossGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36497FF3E478215B6B0196F9 /* WordGlossGenerator.swift */; };
 		F9A9E6B14BAFDA3DDB9061C3 /* SharedContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B868C956265CD4F61FBE8756 /* SharedContainer.swift */; };
@@ -95,9 +98,12 @@
 		6440D69292ACCD843EC41B7F /* ImportedRecordingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportedRecordingStore.swift; sourceTree = "<group>"; };
 		654D8ADF7B7D91BD35289A09 /* ImportedImageSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportedImageSample.swift; sourceTree = "<group>"; };
 		75709728282290EBEA77AAE6 /* SampleTextGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleTextGenerator.swift; sourceTree = "<group>"; };
+		762F1CE37E8890716E60F73D /* GlossaryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlossaryStore.swift; sourceTree = "<group>"; };
+		81CE372796F5C35EB9AEE106 /* GlossaryEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlossaryEntry.swift; sourceTree = "<group>"; };
 		9097D3B807C2021D8C5C6E0D /* ImportedRecording.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportedRecording.swift; sourceTree = "<group>"; };
 		9453282B623D19EFE79CC6A0 /* FlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowLayout.swift; sourceTree = "<group>"; };
 		98E767063B7F412349B1C30D /* HomeSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeSummaryView.swift; sourceTree = "<group>"; };
+		9912378565F63C92DFED79EA /* CustomGlossaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomGlossaryView.swift; sourceTree = "<group>"; };
 		9A2EBF056B94C85D30F3A72F /* SampleKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleKind.swift; sourceTree = "<group>"; };
 		B2D17CA92068C6A51894D2BE /* ImportedTextSampleStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportedTextSampleStore.swift; sourceTree = "<group>"; };
 		B50FE10824FC85FD864D8317 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -126,6 +132,8 @@
 			isa = PBXGroup;
 			children = (
 				C6918E083C67DB08FEAAA331 /* FlashcardGenerator.swift */,
+				81CE372796F5C35EB9AEE106 /* GlossaryEntry.swift */,
+				762F1CE37E8890716E60F73D /* GlossaryStore.swift */,
 				4097CB9BABDA7CDC95A8A86C /* IrohaExplorerView.swift */,
 				545CED820912E84C60D93AEA /* PinyinConverter.swift */,
 				31C9B7C7306890A74F4BEA9D /* StudyNoteGenerator.swift */,
@@ -164,6 +172,7 @@
 				F48871D10B516169D69F88B6 /* AppSettings.swift */,
 				B82F10D3493959AFBE24EE55 /* AppTheme.swift */,
 				B50FE10824FC85FD864D8317 /* Assets.xcassets */,
+				9912378565F63C92DFED79EA /* CustomGlossaryView.swift */,
 				5B5932862BBCA2002043D148 /* DejaEntendu.entitlements */,
 				3B99D0191D8A4292C6A7D00F /* DejaEntenduApp.swift */,
 				98E767063B7F412349B1C30D /* HomeSummaryView.swift */,
@@ -354,9 +363,12 @@
 				CCC99BA07416940EC74E6C78 /* AppTheme.swift in Sources */,
 				2FF75223233F3A606B2E6193 /* AudioIngestion.swift in Sources */,
 				E83036AEB3873C15437896BC /* AudioTranscoder.swift in Sources */,
+				F2D815283F6F7F074E9FFA0D /* CustomGlossaryView.swift in Sources */,
 				8BF0D6D13DE6DE67344DBB05 /* DejaEntenduApp.swift in Sources */,
 				CC89ABD3012341C29FFCEEC8 /* FlashcardGenerator.swift in Sources */,
 				A35CB35F9875D5B0AF32C314 /* FlowLayout.swift in Sources */,
+				5CBECAC8BC845A6A697C8A9E /* GlossaryEntry.swift in Sources */,
+				BEF05F71106D3A9CC44CB608 /* GlossaryStore.swift in Sources */,
 				531CFFE2A135F991C5E2349B /* HomeSummaryView.swift in Sources */,
 				95724C5DBF8018B796C3BF50 /* HomeView.swift in Sources */,
 				51F93B6E291A26AE2417EB15 /* ImageImportView.swift in Sources */,

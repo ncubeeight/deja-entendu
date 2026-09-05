@@ -59,6 +59,25 @@ struct VocabularyFlashcardView: View {
                     }
                 }
 
+                // Shown regardless of loading/ready/failed status — this is
+                // the user's own data, not something generation success or
+                // failure should gate. Also the main reason this screen
+                // stays useful on a device with no on-device model at all:
+                // a matching custom entry means there's still something
+                // real to show instead of just an error.
+                if let customDefinition {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Label("Your Definition", systemImage: "bookmark.fill")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(customDefinition)
+                            .font(.title3)
+                    }
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(.yellow.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
+                }
+
                 switch status {
                 case .loading:
                     ProgressView("Generating…")
@@ -174,6 +193,10 @@ struct VocabularyFlashcardView: View {
     private var isVoiceAvailable: Bool {
         guard let language = entry.language else { return true }
         return AVSpeechSynthesisVoice(language: language.locale.identifier) != nil
+    }
+
+    private var customDefinition: String? {
+        GlossaryStore.definition(forTerm: entry.text, language: entry.language)
     }
 
     private func speak(_ text: String) {
