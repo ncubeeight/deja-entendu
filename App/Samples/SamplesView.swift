@@ -22,6 +22,11 @@ struct SamplesView: View {
     @State private var isGeneratingSample = false
     @State private var generateError: String?
 
+    // Live-recording state.
+    @State private var isRecordLanguageSheetPresented = false
+    @State private var pendingRecordLanguage: SupportedLanguage = .chineseTraditional
+    @State private var isLiveRecordingPresented = false
+
     // Audio-specific import state, ported from the old VoiceMemoImportView.
     @State private var isPickerPresented = false
     @State private var isLanguageSheetPresented = false
@@ -138,6 +143,7 @@ struct SamplesView: View {
                 Button("Add Text") { isTextImportPresented = true }
                 Button("Scan Photo") { isImageImportPresented = true }
                 Button("Generate Sample") { presentGenerateLanguageSheet() }
+                Button("Record Live") { presentRecordLanguageSheet() }
                 Button("Cancel", role: .cancel) {}
             }
             .fileImporter(
@@ -152,6 +158,15 @@ struct SamplesView: View {
             }
             .sheet(isPresented: $isGenerateLanguageSheetPresented) {
                 generateLanguageSelectionSheet
+            }
+            .sheet(isPresented: $isRecordLanguageSheetPresented) {
+                recordLanguageSelectionSheet
+            }
+            .sheet(isPresented: $isLiveRecordingPresented) {
+                LiveRecordingView(language: pendingRecordLanguage) { recording in
+                    audioRecordings.insert(recording, at: 0)
+                    ImportedRecordingStore.save(audioRecordings)
+                }
             }
             .sheet(isPresented: $isTextImportPresented, onDismiss: {
                 textSamples = ImportedTextSampleStore.load()
@@ -332,6 +347,45 @@ struct SamplesView: View {
             pendingGenerateLanguage = enabledLanguages.first ?? .chineseTraditional
         }
         isGenerateLanguageSheetPresented = true
+    }
+
+    @ViewBuilder
+    private var recordLanguageSelectionSheet: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Picker("Language", selection: $pendingRecordLanguage) {
+                        ForEach(enabledLanguages, id: \.self) { language in
+                            Text(language.displayName).tag(language)
+                        }
+                    }
+                    .pickerStyle(.inline)
+                } header: {
+                    Text("What language will you be speaking?")
+                }
+            }
+            .navigationTitle("Choose Language")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { isRecordLanguageSheetPresented = false }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Continue") {
+                        isRecordLanguageSheetPresented = false
+                        isLiveRecordingPresented = true
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+
+    private func presentRecordLanguageSheet() {
+        if !enabledLanguages.contains(pendingRecordLanguage) {
+            pendingRecordLanguage = enabledLanguages.first ?? .chineseTraditional
+        }
+        isRecordLanguageSheetPresented = true
     }
 
     private func generateSample() async {

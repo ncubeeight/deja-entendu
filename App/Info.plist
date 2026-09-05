@@ -27,7 +27,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Used to record your Mandarin practice sessions.</string>
+	<string>Used to record audio samples of the language you're studying.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Used to transcribe your Mandarin practice recordings on-device.</string>
 	<key>UIApplicationSceneManifest</key>

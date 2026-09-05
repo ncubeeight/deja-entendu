@@ -13,5 +13,6 @@ struct ImportedRecording: Identifiable, Codable, Hashable {
     enum Source: String, Codable {
         case filesImporter   // picked via UIDocumentPicker / .fileImporter
         case shareExtension  // arrived via Voice Memos' Share Sheet
+        case liveRecording   // recorded directly in-app (LiveRecordingView)
     }
 }

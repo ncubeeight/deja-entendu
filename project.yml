@@ -53,7 +53,7 @@ targets:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
         NSSpeechRecognitionUsageDescription: "Used to transcribe your Mandarin practice recordings on-device."
-        NSMicrophoneUsageDescription: "Used to record your Mandarin practice sessions."
+        NSMicrophoneUsageDescription: "Used to record audio samples of the language you're studying."
         ITSAppUsesNonExemptEncryption: false
         LSApplicationCategoryType: public.app-category.education
     entitlements:
