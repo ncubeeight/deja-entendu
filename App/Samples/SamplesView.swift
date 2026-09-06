@@ -34,6 +34,13 @@ struct SamplesView: View {
     @State private var pendingShareExtensionFiles: [URL] = []
     @State private var importError: String?
 
+    // Shared PDF text-extraction state — a PDF handed to the Share
+    // Extension arrives here the same way an audio Share does: a language
+    // has to be picked before it can become a real text sample.
+    @State private var isTextSampleLanguageSheetPresented = false
+    @State private var pendingTextSampleLanguage: SupportedLanguage = .chineseTraditional
+    @State private var pendingSharedTextSampleFiles: [URL] = []
+
     @AppStorage(AppSettings.enabledLanguagesKey) private var enabledLanguagesRaw: String = ""
 
     private var enabledLanguages: [SupportedLanguage] {
@@ -168,6 +175,9 @@ struct SamplesView: View {
                     ImportedRecordingStore.save(audioRecordings)
                 }
             }
+            .sheet(isPresented: $isTextSampleLanguageSheetPresented) {
+                textSampleLanguageSelectionSheet
+            }
             .sheet(isPresented: $isTextImportPresented, onDismiss: {
                 textSamples = ImportedTextSampleStore.load()
             }) {
@@ -190,6 +200,12 @@ struct SamplesView: View {
                 if !pending.isEmpty {
                     pendingShareExtensionFiles = pending
                     presentLanguageSheet()
+                }
+
+                let pendingTextSampleFiles = SharedContainer.pendingTextSampleFiles()
+                if !pendingTextSampleFiles.isEmpty {
+                    pendingSharedTextSampleFiles = pendingTextSampleFiles
+                    presentTextSampleLanguageSheet()
                 }
             }
             .alert("Import failed", isPresented: .constant(importError != nil), actions: {
@@ -379,6 +395,55 @@ struct SamplesView: View {
             }
         }
         .presentationDetents([.medium])
+    }
+
+    @ViewBuilder
+    private var textSampleLanguageSelectionSheet: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Picker("Language", selection: $pendingTextSampleLanguage) {
+                        ForEach(enabledLanguages, id: \.self) { language in
+                            Text(language.displayName).tag(language)
+                        }
+                    }
+                    .pickerStyle(.inline)
+                } header: {
+                    Text("What language is this document in?")
+                } footer: {
+                    Text("Text extracted from a shared PDF — picking the right language means it's tagged correctly from the start.")
+                }
+            }
+            .navigationTitle("Choose Language")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        isTextSampleLanguageSheetPresented = false
+                        pendingSharedTextSampleFiles = []
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Continue") {
+                        isTextSampleLanguageSheetPresented = false
+                        let added = SharedContainer.commitPendingTextSamples(
+                            pendingSharedTextSampleFiles, language: pendingTextSampleLanguage
+                        )
+                        textSamples = added + textSamples
+                        ImportedTextSampleStore.save(textSamples)
+                        pendingSharedTextSampleFiles = []
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+
+    private func presentTextSampleLanguageSheet() {
+        if !enabledLanguages.contains(pendingTextSampleLanguage) {
+            pendingTextSampleLanguage = enabledLanguages.first ?? .chineseTraditional
+        }
+        isTextSampleLanguageSheetPresented = true
     }
 
     private func presentRecordLanguageSheet() {

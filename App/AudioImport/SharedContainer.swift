@@ -51,6 +51,41 @@ enum SharedContainer {
         return results
     }
 
+    private static func textSampleInboxDirectory() -> URL? {
+        guard let container = FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: appGroupID) else {
+            return nil
+        }
+        let inbox = container.appendingPathComponent("TextSampleInbox", isDirectory: true)
+        try? FileManager.default.createDirectory(at: inbox, withIntermediateDirectories: true)
+        return inbox
+    }
+
+    /// Called on app launch/foreground: lists any whole-document text the
+    /// Share Extension extracted (currently just from a shared PDF), without
+    /// committing it yet — a full passage needs a language chosen up front
+    /// the same way an audio import does, so this mirrors pendingFiles()/
+    /// commitPendingFiles() rather than drainPendingVocabularyTexts(), which
+    /// skips that step because single vocabulary words don't need one.
+    static func pendingTextSampleFiles() -> [URL] {
+        guard let inbox = textSampleInboxDirectory() else { return [] }
+        return (try? FileManager.default.contentsOfDirectory(
+            at: inbox, includingPropertiesForKeys: nil
+        )) ?? []
+    }
+
+    static func commitPendingTextSamples(_ fileURLs: [URL], language: SupportedLanguage) -> [ImportedTextSample] {
+        var results: [ImportedTextSample] = []
+        for fileURL in fileURLs {
+            if let text = try? String(contentsOf: fileURL, encoding: .utf8),
+               !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                results.append(ImportedTextSample(id: UUID(), body: text, importedAt: .now, language: language))
+            }
+            try? FileManager.default.removeItem(at: fileURL)
+        }
+        return results
+    }
+
     private static func vocabularyInboxDirectory() -> URL? {
         guard let container = FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: appGroupID) else {
