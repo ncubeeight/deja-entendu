@@ -11,7 +11,7 @@ enum SampleInput {
 
     var title: String {
         switch self {
-        case .audio(let recording): recording.originalFilename
+        case .audio(let recording): recording.displayTitle
         case .readyText(let title, _, _): title
         }
     }

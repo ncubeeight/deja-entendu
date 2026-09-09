@@ -26,7 +26,7 @@ enum AnySample: Identifiable, Hashable {
 
     var title: String {
         switch self {
-        case .audio(let recording): recording.originalFilename
+        case .audio(let recording): recording.displayTitle
         case .text(let sample): sample.title
         case .image(let sample): sample.originalFilename
         }
@@ -48,8 +48,12 @@ enum AnySample: Identifiable, Hashable {
         }
     }
 
+    /// Just the language — the import timestamp used to be appended here
+    /// too, but a user importing their own sample already knows roughly
+    /// when they did it, so it was showing information nobody needed to
+    /// read every row. importedAt is kept around for sort order elsewhere.
     var subtitle: String {
-        "\(language.displayName) · \(importedAt.formatted(date: .abbreviated, time: .shortened))"
+        language.displayName
     }
 
     /// What TranscriptionRunnerView needs to run this sample through the

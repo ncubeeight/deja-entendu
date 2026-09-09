@@ -140,18 +140,23 @@ struct SamplesView: View {
                     } label: {
                         Label("Add Sample", systemImage: "plus")
                     }
+                    // Anchored to this button specifically (rather than
+                    // further down the view chain) so on iPad/Mac Catalyst,
+                    // where this renders as a popover instead of a bottom
+                    // sheet, its arrow points at the + button that opened
+                    // it instead of defaulting to an arbitrary edge.
+                    .confirmationDialog("Add a Sample", isPresented: $isAddDialogPresented, titleVisibility: .visible) {
+                        Button("Import Recording") {
+                            pendingShareExtensionFiles = []
+                            presentLanguageSheet()
+                        }
+                        Button("Add Text") { isTextImportPresented = true }
+                        Button("Scan Photo") { isImageImportPresented = true }
+                        Button("Generate Sample") { presentGenerateLanguageSheet() }
+                        Button("Record Live") { presentRecordLanguageSheet() }
+                        Button("Cancel", role: .cancel) {}
+                    }
                 }
-            }
-            .confirmationDialog("Add a Sample", isPresented: $isAddDialogPresented, titleVisibility: .visible) {
-                Button("Import Recording") {
-                    pendingShareExtensionFiles = []
-                    presentLanguageSheet()
-                }
-                Button("Add Text") { isTextImportPresented = true }
-                Button("Scan Photo") { isImageImportPresented = true }
-                Button("Generate Sample") { presentGenerateLanguageSheet() }
-                Button("Record Live") { presentRecordLanguageSheet() }
-                Button("Cancel", role: .cancel) {}
             }
             .fileImporter(
                 isPresented: $isPickerPresented,
