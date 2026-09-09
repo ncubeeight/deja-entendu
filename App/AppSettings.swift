@@ -13,7 +13,7 @@ enum AppSettings {
     /// immediately, while "Turn off languages you don't use" in Settings
     /// still hints there's a much bigger list underneath.
     static let defaultEnabledLanguages: Set<SupportedLanguage> = [
-        .english, .french, .german, .spanish, .chineseTraditional, .chineseSimplified, .japanese
+        .english, .french, .german, .chineseTraditional, .chineseSimplified, .japanese
     ]
 
     /// Decodes the comma-joined raw value @AppStorage stores. An empty or
