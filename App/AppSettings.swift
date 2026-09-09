@@ -6,6 +6,7 @@ import SwiftUI
 enum AppSettings {
     static let enabledLanguagesKey = "enabledLanguagesRawValues"
     static let colorSchemeKey = "preferredColorSchemeRawValue"
+    static let hasCompletedFirstHomeLaunchKey = "hasCompletedFirstHomeLaunch"
 
     /// Shown before the user has ever visited Settings. All 46 languages
     /// enabled by default read as overwhelming in the import picker — a

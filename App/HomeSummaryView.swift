@@ -17,6 +17,20 @@ struct HomeSummaryView: View {
     @State private var isAddTextSheetPresented = false
     @State private var isAddImageSheetPresented = false
 
+    // Captured once at init from the persisted flag below, before this
+    // launch has a chance to flip it — so the full banner stays up for
+    // this entire session even though hasCompletedFirstLaunch flips to
+    // true almost immediately in .task. Only the *next* launch reads
+    // the updated value and gets the compact banner.
+    @State private var showFullHeader: Bool
+    @AppStorage(AppSettings.hasCompletedFirstHomeLaunchKey) private var hasCompletedFirstLaunch = false
+
+    init(selectedTab: Binding<Int>) {
+        self._selectedTab = selectedTab
+        let alreadyLaunchedBefore = UserDefaults.standard.bool(forKey: AppSettings.hasCompletedFirstHomeLaunchKey)
+        self._showFullHeader = State(initialValue: !alreadyLaunchedBefore)
+    }
+
     private static func loadSamples() -> [AnySample] {
         (ImportedRecordingStore.load().map(AnySample.audio)
             + ImportedTextSampleStore.load().map(AnySample.text)
@@ -45,7 +59,11 @@ struct HomeSummaryView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 28) {
-                    titleBanner
+                    if showFullHeader {
+                        fullTitleBanner
+                    } else {
+                        compactTitleBanner
+                    }
 
                     VStack(alignment: .leading, spacing: 28) {
                         continueListeningSection
@@ -69,13 +87,31 @@ struct HomeSummaryView: View {
                     NavigationLink {
                         IrohaExplorerView()
                     } label: {
-                        Label("Example interaction", systemImage: "character.book.closed")
+                        // "character.book.closed" put a letter on the book
+                        // cover that read as ambiguous (not obviously
+                        // tappable/an invitation to explore) — a plain
+                        // turning-page glyph reads as "open this" on its
+                        // own, so the spelled-out label only needs to
+                        // carry that meaning for a first-time user.
+                        if showFullHeader {
+                            HStack(spacing: 6) {
+                                Image(systemName: "book.pages")
+                                Text("Example interaction")
+                                    .font(.subheadline.weight(.semibold))
+                            }
+                        } else {
+                            Image(systemName: "book.pages")
+                                .accessibilityLabel("Example interaction")
+                        }
                     }
                 }
             }
             .task {
                 vocabulary = VocabularyStore.load()
                 samples = Self.loadSamples()
+                if !hasCompletedFirstLaunch {
+                    hasCompletedFirstLaunch = true
+                }
             }
             .confirmationDialog("Add to Déjà Entendu", isPresented: $isAddActionSheetPresented, titleVisibility: .visible) {
                 Button("Import a Recording") { selectedTab = 1 }
@@ -131,8 +167,11 @@ struct HomeSummaryView: View {
         VocabularyStore.save(vocabulary)
     }
 
+    /// Shown only until hasCompletedFirstLaunch is set — the full-size
+    /// hero with the tagline, for a first impression that introduces
+    /// the brand.
     @ViewBuilder
-    private var titleBanner: some View {
+    private var fullTitleBanner: some View {
         VStack(spacing: 10) {
             Text("Déjà Entendu")
                 .font(.system(size: 34, weight: .bold, design: .rounded))
@@ -145,12 +184,28 @@ struct HomeSummaryView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 40)
         .padding(.horizontal, 20)
-        .background(
-            LinearGradient(
-                colors: [AppTheme.headerGradientStart, AppTheme.headerGradientEnd],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+        .background(headerGradient)
+    }
+
+    /// Shown on every launch after the first — the user already knows
+    /// the brand by then, so this drops the tagline and shrinks to a
+    /// narrow band, trading hero space for more vocabulary on screen.
+    @ViewBuilder
+    private var compactTitleBanner: some View {
+        Text("Déjà Entendu")
+            .font(.system(size: 20, weight: .bold, design: .rounded))
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .padding(.horizontal, 20)
+            .background(headerGradient)
+    }
+
+    private var headerGradient: LinearGradient {
+        LinearGradient(
+            colors: [AppTheme.headerGradientStart, AppTheme.headerGradientEnd],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
         )
     }
 
