@@ -19,6 +19,12 @@ struct LiveRecordingView: View {
     @State private var recordedURL: URL?
     @State private var permissionDenied = false
     @State private var errorMessage: String?
+    @State private var hitTimeLimit = false
+
+    // A practice sentence or short passage never needs anywhere near this
+    // long — capping it keeps a forgotten, still-running recording from
+    // quietly filling up device storage in the background.
+    private let maxDuration: TimeInterval = 180
 
     var body: some View {
         NavigationStack {
@@ -80,7 +86,8 @@ struct LiveRecordingView: View {
 
     private var statusText: String {
         if permissionDenied { return "Microphone access is required to record. Enable it in Settings." }
-        if isRecording { return "Recording…" }
+        if isRecording { return "Recording… (stops automatically at \(timeString(maxDuration)))" }
+        if hitTimeLimit { return "Reached the \(timeString(maxDuration)) limit — recording stopped. Tap Use Recording to save, or record again to redo it." }
         if recordedURL != nil { return "Tap Use Recording to save, or record again to redo it." }
         return "Tap to start recording."
     }
@@ -115,8 +122,13 @@ struct LiveRecordingView: View {
             recordedURL = url
             isRecording = true
             elapsed = 0
+            hitTimeLimit = false
             timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
                 elapsed += 0.1
+                if elapsed >= maxDuration {
+                    hitTimeLimit = true
+                    stopRecording()
+                }
             }
         } catch {
             errorMessage = error.localizedDescription
