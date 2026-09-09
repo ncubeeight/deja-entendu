@@ -41,6 +41,8 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
     case telugu
     case kannada
     case amharic
+    case finnish
+    case estonian
 
     var locale: Locale {
         switch self {
@@ -116,17 +118,21 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
             Locale(identifier: "kn-IN")
         case .amharic:
             Locale(identifier: "am-ET")
+        case .finnish:
+            Locale(identifier: "fi-FI")
+        case .estonian:
+            Locale(identifier: "et-EE")
         }
     }
 
     /// For NLTokenizer — telling it the language up front gives more
     /// reliable word/sentence segmentation than auto-detection, especially
     /// for Chinese/Japanese where there's no whitespace to fall back on.
-    /// Swahili, Tagalog, Yoruba, and Quechua have no NLLanguage constant at
-    /// all (checked the full list in the SDK header, not just a naming
-    /// mismatch) — they fall back to .undetermined, Apple's own value for
-    /// exactly this case, which uses generic script/whitespace-based
-    /// segmentation. Since all four are Latin-script, space-delimited
+    /// Swahili, Tagalog, Yoruba, Quechua, and Estonian have no NLLanguage
+    /// constant at all (checked the full list in the SDK header, not just a
+    /// naming mismatch) — they fall back to .undetermined, Apple's own value
+    /// for exactly this case, which uses generic script/whitespace-based
+    /// segmentation. Since all five are Latin-script, space-delimited
     /// languages, this should still segment reasonably, just without the
     /// language-specific tuning the other cases get.
     var nlLanguage: NLLanguage {
@@ -167,6 +173,8 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
         case .telugu: .telugu
         case .kannada: .kannada
         case .amharic: .amharic
+        case .finnish: .finnish
+        case .estonian: .undetermined
         }
     }
 
@@ -208,6 +216,8 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
         case .telugu: "Telugu"
         case .kannada: "Kannada"
         case .amharic: "Amharic"
+        case .finnish: "Finnish"
+        case .estonian: "Estonian"
         }
     }
 }

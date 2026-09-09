@@ -11,13 +11,13 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Section {
-                ForEach(SupportedLanguage.allCases.sorted { $0.displayName < $1.displayName }, id: \.self) { language in
-                    Toggle(language.displayName, isOn: binding(for: language))
+                Picker("Appearance", selection: $colorSchemeRaw) {
+                    ForEach(AppColorScheme.allCases, id: \.self) { scheme in
+                        Text(scheme.displayName).tag(scheme.rawValue)
+                    }
                 }
             } header: {
-                Text("Languages shown on import")
-            } footer: {
-                Text("Turn off languages you don't use to simplify the picker. At least one must stay on.")
+                Text("Appearance")
             }
 
             Section {
@@ -31,13 +31,13 @@ struct SettingsView: View {
             }
 
             Section {
-                Picker("Appearance", selection: $colorSchemeRaw) {
-                    ForEach(AppColorScheme.allCases, id: \.self) { scheme in
-                        Text(scheme.displayName).tag(scheme.rawValue)
-                    }
+                ForEach(SupportedLanguage.allCases.sorted { $0.displayName < $1.displayName }, id: \.self) { language in
+                    Toggle(language.displayName, isOn: binding(for: language))
                 }
             } header: {
-                Text("Appearance")
+                Text("Languages shown on import")
+            } footer: {
+                Text("Turn off languages you don't use to simplify the picker. At least one must stay on.")
             }
 
             Section {
