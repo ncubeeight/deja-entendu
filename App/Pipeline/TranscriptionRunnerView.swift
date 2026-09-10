@@ -181,6 +181,14 @@ private struct TranscriptWordToken: View {
 
     var body: some View {
         Text(word)
+            // The highlight backgrounds (AppTheme.rainbow, and the coral
+            // selection tint below) are fixed light pastels regardless of
+            // light/dark mode — leaving this at the default .primary text
+            // color meant it turned white in dark mode, unreadable against
+            // those same light backgrounds. AppTheme.ink is a fixed dark
+            // color, not one that flips with the system scheme, so it stays
+            // legible against these highlights either way.
+            .foregroundStyle(AppTheme.ink)
             .padding(.horizontal, 3)
             .padding(.vertical, 1)
             .background(

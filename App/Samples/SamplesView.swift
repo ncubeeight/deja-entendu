@@ -91,18 +91,38 @@ struct SamplesView: View {
 
     var body: some View {
         NavigationStack {
+            // The segmented filter used to float above the list via
+            // .safeAreaInset — it now lives in the List's own section
+            // header instead (design change from Mark Jeschke's "Deja
+            // Segmented" prototype), so it scrolls and pins as a native
+            // list header. .scrollEdgeEffectStyle(.hard, for: .top) turns
+            // off iOS 26's translucent "Liquid Glass" scroll-edge blur
+            // behind it, since that blur reads oddly under a control
+            // rather than plain text.
             List {
-                if filteredSamples.isEmpty {
-                    ContentUnavailableView(
-                        "No samples yet",
-                        systemImage: "tray",
-                        description: Text("Import a recording, add text, or scan a photo below.")
-                    )
-                }
-                ForEach(filteredSamples) { sample in
-                    row(for: sample)
+                Section {
+                    if filteredSamples.isEmpty {
+                        ContentUnavailableView(
+                            "No samples yet",
+                            systemImage: "tray",
+                            description: Text("Import a recording, add text, or scan a photo below.")
+                        )
+                        .listRowSeparator(.hidden)
+                    }
+                    ForEach(filteredSamples) { sample in
+                        row(for: sample)
+                    }
+                } header: {
+                    Picker("Filter", selection: $filter) {
+                        ForEach(SampleFilter.allCases, id: \.self) { filter in
+                            Text(filter.label).tag(filter)
+                        }
+                    }
+                    .pickerStyle(.segmented)
                 }
             }
+            .listStyle(.plain)
+            .hardTopScrollEdgeOnIOS26()
             .overlay {
                 if isGeneratingSample {
                     ZStack {
@@ -117,17 +137,6 @@ struct SamplesView: View {
                         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
                     }
                 }
-            }
-            .safeAreaInset(edge: .top) {
-                Picker("Filter", selection: $filter) {
-                    ForEach(SampleFilter.allCases, id: \.self) { filter in
-                        Text(filter.label).tag(filter)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal)
-                .padding(.top, 8)
-                .background(.bar)
             }
             .navigationTitle("Samples")
             .navigationDestination(for: AnySample.self) { sample in
@@ -490,6 +499,22 @@ struct SamplesView: View {
                     importError = error.localizedDescription
                 }
             }
+        }
+    }
+}
+
+private extension View {
+    /// From Mark Jeschke's "Deja Segmented" prototype: hides the
+    /// translucent scroll-edge blur iOS 26 draws behind the top of a
+    /// List/ScrollView, so a control sitting in the first section header
+    /// (like the filter Picker here) reads crisply instead of through
+    /// glass. No-op pre-iOS 26.
+    @ViewBuilder
+    func hardTopScrollEdgeOnIOS26() -> some View {
+        if #available(iOS 26.0, *) {
+            self.scrollEdgeEffectStyle(.hard, for: .top)
+        } else {
+            self
         }
     }
 }
