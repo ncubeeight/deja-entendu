@@ -73,7 +73,7 @@ struct HomeSummaryView: View {
                 }
                 .padding(.bottom, 20)
             }
-            .background(AppTheme.background)
+            .background(AppTheme.homeBackground)
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: AnySample.self) { sample in
@@ -215,16 +215,16 @@ struct HomeSummaryView: View {
             Text("Continue studying")
                 .font(.headline)
                 .fontDesign(.rounded)
-                .foregroundStyle(AppTheme.ink)
+                .foregroundStyle(AppTheme.homeInk)
 
             if samples.isEmpty {
                 Text("Recordings, text, and photos you import will show up here once they're saved between launches.")
                     .font(.subheadline)
-                    .foregroundStyle(AppTheme.inkSoft)
+                    .foregroundStyle(AppTheme.homeInkSoft)
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: 18))
-                    .overlay(RoundedRectangle(cornerRadius: 18).stroke(AppTheme.line))
+                    .background(AppTheme.homeSurface, in: RoundedRectangle(cornerRadius: 18))
+                    .overlay(RoundedRectangle(cornerRadius: 18).stroke(AppTheme.homeLine))
             } else {
                 VStack(spacing: 10) {
                     ForEach(samples.prefix(3)) { sample in
@@ -242,16 +242,16 @@ struct HomeSummaryView: View {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(sample.title)
                                             .font(.subheadline.weight(.semibold))
-                                            .foregroundStyle(AppTheme.ink)
+                                            .foregroundStyle(AppTheme.homeInk)
                                             .lineLimit(1)
                                         Text(sample.subtitle)
                                             .font(.caption)
-                                            .foregroundStyle(AppTheme.inkSoft)
+                                            .foregroundStyle(AppTheme.homeInkSoft)
                                     }
                                     Spacer()
                                     Image(systemName: "chevron.right")
                                         .font(.caption)
-                                        .foregroundStyle(AppTheme.inkSoft)
+                                        .foregroundStyle(AppTheme.homeInkSoft)
                                 }
                             }
                             .buttonStyle(.plain)
@@ -261,13 +261,13 @@ struct HomeSummaryView: View {
                             } label: {
                                 Image(systemName: "xmark.circle.fill")
                                     .font(.subheadline)
-                                    .foregroundStyle(AppTheme.inkSoft)
+                                    .foregroundStyle(AppTheme.homeInkSoft)
                             }
                             .buttonStyle(.plain)
                         }
                         .padding(16)
-                        .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: 18))
-                        .overlay(RoundedRectangle(cornerRadius: 18).stroke(AppTheme.line))
+                        .background(AppTheme.homeSurface, in: RoundedRectangle(cornerRadius: 18))
+                        .overlay(RoundedRectangle(cornerRadius: 18).stroke(AppTheme.homeLine))
                     }
                 }
             }
@@ -280,7 +280,7 @@ struct HomeSummaryView: View {
             Text("Words to review")
                 .font(.headline)
                 .fontDesign(.rounded)
-                .foregroundStyle(AppTheme.ink)
+                .foregroundStyle(AppTheme.homeInk)
 
             if vocabulary.isEmpty {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 10)], spacing: 10) {
@@ -291,7 +291,7 @@ struct HomeSummaryView: View {
                 }
                 Text("These are just examples — share a word from Translate, or add your own, to replace them.")
                     .font(.caption)
-                    .foregroundStyle(AppTheme.inkSoft)
+                    .foregroundStyle(AppTheme.homeInkSoft)
             } else {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 10)], spacing: 10) {
                     ForEach(vocabulary.prefix(9)) { entry in
@@ -299,12 +299,12 @@ struct HomeSummaryView: View {
                             VStack(spacing: 4) {
                                 Text(entry.text)
                                     .font(.subheadline.weight(.semibold))
-                                    .foregroundStyle(AppTheme.ink)
+                                    .foregroundStyle(AppTheme.homeInk)
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.8)
                                 Text(subtitle(for: entry))
                                     .font(.caption2)
-                                    .foregroundStyle(AppTheme.inkSoft)
+                                    .foregroundStyle(AppTheme.homeInkSoft)
                                     .lineLimit(2)
                                     .minimumScaleFactor(0.7)
                                     .multilineTextAlignment(.center)
@@ -312,8 +312,8 @@ struct HomeSummaryView: View {
                             .padding(.vertical, 14)
                             .padding(.horizontal, 8)
                             .frame(maxWidth: .infinity)
-                            .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: 16))
-                            .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppTheme.line))
+                            .background(AppTheme.homeSurface, in: RoundedRectangle(cornerRadius: 16))
+                            .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppTheme.homeLine))
                         }
                         .buttonStyle(.plain)
                         .overlay(alignment: .topTrailing) {
@@ -322,8 +322,8 @@ struct HomeSummaryView: View {
                             } label: {
                                 Image(systemName: "xmark.circle.fill")
                                     .font(.callout)
-                                    .foregroundStyle(AppTheme.inkSoft)
-                                    .background(AppTheme.surface, in: Circle())
+                                    .foregroundStyle(AppTheme.homeInkSoft)
+                                    .background(AppTheme.homeSurface, in: Circle())
                             }
                             .buttonStyle(.plain)
                             .offset(x: 6, y: -6)
@@ -350,12 +350,12 @@ struct HomeSummaryView: View {
         VStack(spacing: 4) {
             Text(item.word)
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(AppTheme.ink)
+                .foregroundStyle(AppTheme.homeInk)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
             Text("\(item.gloss) · \(item.language.displayName)")
                 .font(.caption2)
-                .foregroundStyle(AppTheme.inkSoft)
+                .foregroundStyle(AppTheme.homeInkSoft)
                 .lineLimit(2)
                 .minimumScaleFactor(0.7)
                 .multilineTextAlignment(.center)
@@ -363,8 +363,8 @@ struct HomeSummaryView: View {
         .padding(.vertical, 14)
         .padding(.horizontal, 8)
         .frame(maxWidth: .infinity)
-        .background(AppTheme.surface, in: RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppTheme.line))
+        .background(AppTheme.homeSurface, in: RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppTheme.homeLine))
     }
 
     @ViewBuilder

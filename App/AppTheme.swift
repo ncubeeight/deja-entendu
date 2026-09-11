@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// The palette from the "Déjà Entendu" home-screen design
 /// (claude.ai/code/artifact/ee88d591-cb09-4093-a70a-4dbf66bf8534), lifted
@@ -10,6 +11,23 @@ enum AppTheme {
     static let ink = Color(hex: 0x241C16)
     static let inkSoft = Color(hex: 0x7A6F63)
     static let line = Color(hex: 0xECE3D8)
+
+    // Adaptive counterparts for the Home tab's own background/card/text
+    // colors — Home was the only screen painting a fixed light surface
+    // (background/surface/ink/inkSoft/line above are deliberately fixed,
+    // since ink also has to stay dark everywhere it sits against the
+    // always-light `rainbow` word-highlight colors in TranscriptWordToken).
+    // Without these, dark mode left Home's status bar area and card text
+    // sitting on a surface that never actually went dark, which is what
+    // read as "forced light mode." homeInk/homeInkSoft mirror the
+    // proportions and hues of their fixed counterparts rather than reusing
+    // plain white/gray, so Home still reads as the same warm palette in
+    // dark mode instead of a generic system dark theme.
+    static let homeBackground = Color(light: 0xFBF6EF, dark: 0x17130F)
+    static let homeSurface = Color(light: 0xFFFDF9, dark: 0x241F18)
+    static let homeInk = Color(light: 0x241C16, dark: 0xF5EFE6)
+    static let homeInkSoft = Color(light: 0x7A6F63, dark: 0xAEA192)
+    static let homeLine = Color(light: 0xECE3D8, dark: 0x39332A)
 
     static let coral = Color(hex: 0xFF6B4A)
     static let coralSoft = Color(hex: 0xFFE4DA)
@@ -44,5 +62,14 @@ private extension Color {
             green: Double((hex >> 8) & 0xFF) / 255,
             blue: Double(hex & 0xFF) / 255
         )
+    }
+
+    /// A color that resolves to `dark` when the effective trait
+    /// collection (system setting, or this app's own Appearance override
+    /// in Settings) is dark, and `light` otherwise.
+    init(light: UInt32, dark: UInt32) {
+        self.init(UIColor { traits in
+            UIColor(Color(hex: traits.userInterfaceStyle == .dark ? dark : light))
+        })
     }
 }
