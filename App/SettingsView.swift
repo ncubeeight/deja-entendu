@@ -59,6 +59,7 @@ struct SettingsView: View {
             }
         }
         .navigationTitle("Settings")
+        .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $languageSearchText, prompt: "Search Languages")
     }
 
