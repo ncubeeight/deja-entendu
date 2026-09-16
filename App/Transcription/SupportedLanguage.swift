@@ -43,6 +43,8 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
     case amharic
     case finnish
     case estonian
+    case polish
+    case arabic
 
     var locale: Locale {
         switch self {
@@ -122,6 +124,10 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
             Locale(identifier: "fi-FI")
         case .estonian:
             Locale(identifier: "et-EE")
+        case .polish:
+            Locale(identifier: "pl-PL")
+        case .arabic:
+            Locale(identifier: "ar-SA")
         }
     }
 
@@ -175,6 +181,8 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
         case .amharic: .amharic
         case .finnish: .finnish
         case .estonian: .undetermined
+        case .polish: .polish
+        case .arabic: .arabic
         }
     }
 
@@ -218,6 +226,19 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
         case .amharic: "Amharic"
         case .finnish: "Finnish"
         case .estonian: "Estonian"
+        case .polish: "Polish"
+        case .arabic: "Arabic"
         }
     }
+
+    /// The languages Apple's Translate app currently offers as downloadable,
+    /// on-device dictionary/translation packs (its Languages tab, iOS 26).
+    /// Distinct from the full transcription list above — this is Apple's
+    /// smaller, curated set that the Translation framework can actually
+    /// fetch language data for.
+    static let translationDictionaryLanguages: [SupportedLanguage] = [
+        .arabic, .chineseSimplified, .chineseTraditional, .dutch, .english,
+        .french, .hindi, .indonesian, .italian, .korean, .polish, .portuguese,
+        .russian, .spanish, .thai, .turkish, .ukrainian, .vietnamese
+    ]
 }

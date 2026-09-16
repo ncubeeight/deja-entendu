@@ -1,9 +1,11 @@
 import SwiftUI
+import FoundationModels
 
 struct SettingsView: View {
     @AppStorage(AppSettings.enabledLanguagesKey) private var enabledLanguagesRaw: String = ""
     @AppStorage(AppSettings.colorSchemeKey) private var colorSchemeRaw: String = AppColorScheme.system.rawValue
     @State private var languageSearchText = ""
+    @State private var dictionaryPackInterstitialLanguage: SupportedLanguage?
 
     private var enabledLanguages: Set<SupportedLanguage> {
         AppSettings.languages(from: enabledLanguagesRaw)
@@ -52,6 +54,8 @@ struct SettingsView: View {
                 Text("Turn off languages you don't use to simplify the picker. At least one must stay on.")
             }
 
+            DictionaryLanguagePacksSection()
+
             Section {
                 Text(versionLabel)
                     .font(.footnote)
@@ -61,6 +65,17 @@ struct SettingsView: View {
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $languageSearchText, prompt: "Search Languages")
+        .alert(
+            "No On-Device Model",
+            isPresented: Binding(
+                get: { dictionaryPackInterstitialLanguage != nil },
+                set: { if !$0 { dictionaryPackInterstitialLanguage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Please import the language pack for this language when phone has wi-fi coverage.")
+        }
     }
 
     /// "Version 1.0 Build 25" rather than a single dotted "1.0.25" —
@@ -88,6 +103,17 @@ struct SettingsView: View {
                 // would clear the last remaining language.
                 guard !current.isEmpty else { return }
                 enabledLanguagesRaw = AppSettings.rawValue(from: current)
+
+                // On a device that can't run the on-device model at all
+                // (not just "not enabled yet" or "still downloading"),
+                // Samples/Vocabulary definitions for this language will
+                // need Apple's offline dictionary pack instead — point the
+                // user at it rather than let lookups silently fail later.
+                if isOn,
+                   SupportedLanguage.translationDictionaryLanguages.contains(language),
+                   case .unavailable(.deviceNotEligible) = SystemLanguageModel.default.availability {
+                    dictionaryPackInterstitialLanguage = language
+                }
             }
         )
     }

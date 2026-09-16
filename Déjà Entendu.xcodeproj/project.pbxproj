@@ -19,6 +19,7 @@
 		48D40D6016A289D197A8544F /* VocabularyListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0909CDAE2AEC3B3672066AA3 /* VocabularyListView.swift */; };
 		4A9D006ABCFD3DA1463D0AF2 /* StudyNoteGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31C9B7C7306890A74F4BEA9D /* StudyNoteGenerator.swift */; };
 		4BD2C3C830E13087C9D8A09C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB97030EE7AF1FA03613B818 /* SettingsView.swift */; };
+		86B7860296C68C651650CF23 /* DictionaryLanguagePacksSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 962476F86B53CC391B7A67E4 /* DictionaryLanguagePacksSection.swift */; };
 		51F93B6E291A26AE2417EB15 /* ImageImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F7CDA6E7635DCCD37D446B /* ImageImportView.swift */; };
 		531CFFE2A135F991C5E2349B /* HomeSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98E767063B7F412349B1C30D /* HomeSummaryView.swift */; };
 		5CBECAC8BC845A6A697C8A9E /* GlossaryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81CE372796F5C35EB9AEE106 /* GlossaryEntry.swift */; };
@@ -115,6 +116,7 @@
 		C6918E083C67DB08FEAAA331 /* FlashcardGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlashcardGenerator.swift; sourceTree = "<group>"; };
 		C73E6F801309AF213CFBBCA2 /* SamplesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplesView.swift; sourceTree = "<group>"; };
 		CB97030EE7AF1FA03613B818 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		962476F86B53CC391B7A67E4 /* DictionaryLanguagePacksSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryLanguagePacksSection.swift; sourceTree = "<group>"; };
 		D0A27B4F0DDE50FFD59E50F8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D0F7CDA6E7635DCCD37D446B /* ImageImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageImportView.swift; sourceTree = "<group>"; };
 		D405202E2232960E90E45F78 /* AudioIngestion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioIngestion.swift; sourceTree = "<group>"; };
@@ -182,6 +184,7 @@
 				D0A27B4F0DDE50FFD59E50F8 /* Info.plist */,
 				9A2EBF056B94C85D30F3A72F /* SampleKind.swift */,
 				CB97030EE7AF1FA03613B818 /* SettingsView.swift */,
+				962476F86B53CC391B7A67E4 /* DictionaryLanguagePacksSection.swift */,
 				E44DB28005E4AB07077A9D87 /* AudioImport */,
 				EE8B0F19DD06418E8A50B612 /* ImageImport */,
 				EEEB74786552A86F8E74AE0B /* Pipeline */,
@@ -389,6 +392,7 @@
 				E10D8237FDB27C68FB8225F7 /* SampleTextGenerator.swift in Sources */,
 				AEB3EE02C6A968B359CD9AC6 /* SamplesView.swift in Sources */,
 				4BD2C3C830E13087C9D8A09C /* SettingsView.swift in Sources */,
+				86B7860296C68C651650CF23 /* DictionaryLanguagePacksSection.swift in Sources */,
 				F9A9E6B14BAFDA3DDB9061C3 /* SharedContainer.swift in Sources */,
 				77797AD12F21257B3216CC57 /* SpeechTranscriberService.swift in Sources */,
 				4A9D006ABCFD3DA1463D0AF2 /* StudyNoteGenerator.swift in Sources */,
