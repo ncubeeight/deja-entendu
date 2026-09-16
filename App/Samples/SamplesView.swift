@@ -76,17 +76,57 @@ struct SamplesView: View {
         }
     }
 
+    /// Only exposed on the All tab (see `filteredSamples`) — once a filter
+    /// narrows the list to one kind, newest-first is the only order that's
+    /// made sense so far, so sorting stays out of the way there.
+    private enum SampleSort: String, CaseIterable, Identifiable {
+        case dateNewestFirst, dateOldestFirst, language, title
+
+        var id: String { rawValue }
+
+        var label: String {
+            switch self {
+            case .dateNewestFirst: "Date (Newest First)"
+            case .dateOldestFirst: "Date (Oldest First)"
+            case .language: "Language"
+            case .title: "Title"
+            }
+        }
+
+        var icon: String {
+            switch self {
+            case .dateNewestFirst: "arrow.down"
+            case .dateOldestFirst: "arrow.up"
+            case .language: "globe"
+            case .title: "textformat"
+            }
+        }
+
+        func sort(_ samples: [AnySample]) -> [AnySample] {
+            switch self {
+            case .dateNewestFirst:
+                samples.sorted { $0.importedAt > $1.importedAt }
+            case .dateOldestFirst:
+                samples.sorted { $0.importedAt < $1.importedAt }
+            case .language:
+                samples.sorted { $0.language.displayName.localizedCaseInsensitiveCompare($1.language.displayName) == .orderedAscending }
+            case .title:
+                samples.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
+            }
+        }
+    }
+
+    @State private var sortOption: SampleSort = .dateNewestFirst
+
     private var allSamples: [AnySample] {
-        let combined: [AnySample] =
-            audioRecordings.map(AnySample.audio) +
+        audioRecordings.map(AnySample.audio) +
             textSamples.map(AnySample.text) +
             imageSamples.map(AnySample.image)
-        return combined.sorted { $0.importedAt > $1.importedAt }
     }
 
     private var filteredSamples: [AnySample] {
-        guard let kind = filter.kind else { return allSamples }
-        return allSamples.filter { $0.kind == kind }
+        let base = filter.kind.map { kind in allSamples.filter { $0.kind == kind } } ?? allSamples
+        return filter == .all ? sortOption.sort(base) : base.sorted { $0.importedAt > $1.importedAt }
     }
 
     var body: some View {
@@ -143,6 +183,19 @@ struct SamplesView: View {
                 TranscriptionRunnerView(input: sample.runnerInput)
             }
             .toolbar {
+                if filter == .all {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Menu {
+                            Picker("Sort by", selection: $sortOption) {
+                                ForEach(SampleSort.allCases) { option in
+                                    Label(option.label, systemImage: option.icon).tag(option)
+                                }
+                            }
+                        } label: {
+                            Label("Sort", systemImage: "arrow.up.arrow.down")
+                        }
+                    }
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         isAddDialogPresented = true
@@ -237,33 +290,30 @@ struct SamplesView: View {
 
     @ViewBuilder
     private func row(for sample: AnySample) -> some View {
-        HStack {
-            NavigationLink(value: sample) {
-                HStack(spacing: 10) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 9)
-                            .fill(sample.kind.tintSoft)
-                            .frame(width: 32, height: 32)
-                        Image(systemName: sample.kind.icon)
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(sample.kind.tint)
-                    }
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(sample.title).font(.headline)
-                        Text(sample.subtitle)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
+        NavigationLink(value: sample) {
+            HStack(spacing: 10) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 9)
+                        .fill(sample.kind.tintSoft)
+                        .frame(width: 32, height: 32)
+                    Image(systemName: sample.kind.icon)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(sample.kind.tint)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(sample.title).font(.headline)
+                    Text(sample.subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
-            Spacer()
-            Button {
+        }
+        .swipeActions(edge: .trailing) {
+            Button(role: .destructive) {
                 delete(sample)
             } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .foregroundStyle(.secondary)
+                Label("Delete", systemImage: "trash")
             }
-            .buttonStyle(.plain)
         }
     }
 

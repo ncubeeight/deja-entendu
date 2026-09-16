@@ -160,13 +160,6 @@ struct HomeSummaryView: View {
         }
     }
 
-    private func deleteVocabulary(_ entry: VocabularyEntry) {
-        withAnimation {
-            vocabulary.removeAll { $0.id == entry.id }
-        }
-        VocabularyStore.save(vocabulary)
-    }
-
     /// Shown only until hasCompletedFirstLaunch is set — the full-size
     /// hero with the tagline, for a first impression that introduces
     /// the brand.
@@ -228,7 +221,9 @@ struct HomeSummaryView: View {
             } else {
                 VStack(spacing: 10) {
                     ForEach(samples.prefix(3)) { sample in
-                        HStack(spacing: 8) {
+                        SwipeToDeleteRow(cornerRadius: 18) {
+                            delete(sample)
+                        } content: {
                             NavigationLink(value: sample) {
                                 HStack(spacing: 10) {
                                     ZStack {
@@ -253,21 +248,14 @@ struct HomeSummaryView: View {
                                         .font(.caption)
                                         .foregroundStyle(AppTheme.homeInkSoft)
                                 }
-                            }
-                            .buttonStyle(.plain)
-
-                            Button {
-                                delete(sample)
-                            } label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .font(.subheadline)
-                                    .foregroundStyle(AppTheme.homeInkSoft)
+                                .padding(16)
+                                .frame(maxWidth: .infinity)
+                                .background(AppTheme.homeSurface, in: RoundedRectangle(cornerRadius: 18))
+                                .overlay(RoundedRectangle(cornerRadius: 18).stroke(AppTheme.homeLine))
+                                .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
                         }
-                        .padding(16)
-                        .background(AppTheme.homeSurface, in: RoundedRectangle(cornerRadius: 18))
-                        .overlay(RoundedRectangle(cornerRadius: 18).stroke(AppTheme.homeLine))
                     }
                 }
             }
@@ -314,20 +302,9 @@ struct HomeSummaryView: View {
                             .frame(maxWidth: .infinity)
                             .background(AppTheme.homeSurface, in: RoundedRectangle(cornerRadius: 16))
                             .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppTheme.homeLine))
+                            .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
-                        .overlay(alignment: .topTrailing) {
-                            Button {
-                                deleteVocabulary(entry)
-                            } label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .font(.callout)
-                                    .foregroundStyle(AppTheme.homeInkSoft)
-                                    .background(AppTheme.homeSurface, in: Circle())
-                            }
-                            .buttonStyle(.plain)
-                            .offset(x: 6, y: -6)
-                        }
                     }
                     addWordCard
                 }
@@ -385,6 +362,7 @@ struct HomeSummaryView: View {
             .frame(maxWidth: .infinity)
             .background(AppTheme.coralSoft, in: RoundedRectangle(cornerRadius: 16))
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppTheme.coral.opacity(0.4)))
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
@@ -392,4 +370,83 @@ struct HomeSummaryView: View {
 
 #Preview {
     HomeSummaryView(selectedTab: .constant(0))
+}
+
+/// Reveals a trailing "Delete" action by dragging the row left, mirroring
+/// the built-in List swipe-to-delete gesture for rows that live in a plain
+/// VStack (List's swipeActions only works inside an actual List, and these
+/// rows are inside a ScrollView alongside other home-screen sections).
+struct SwipeToDeleteRow<Content: View>: View {
+    let cornerRadius: CGFloat
+    let onDelete: () -> Void
+    @ViewBuilder let content: Content
+
+    @State private var offset: CGFloat = 0
+    @State private var isRevealed = false
+
+    private let deleteWidth: CGFloat = 76
+
+    init(cornerRadius: CGFloat = 18, onDelete: @escaping () -> Void, @ViewBuilder content: () -> Content) {
+        self.cornerRadius = cornerRadius
+        self.onDelete = onDelete
+        self.content = content()
+    }
+
+    var body: some View {
+        ZStack(alignment: .trailing) {
+            Button(role: .destructive, action: onDelete) {
+                Label("Delete", systemImage: "trash")
+                    .labelStyle(.iconOnly)
+                    .font(.title3)
+                    .foregroundStyle(.white)
+                    .frame(width: deleteWidth)
+                    .frame(maxHeight: .infinity)
+            }
+            .background(Color.red, in: RoundedRectangle(cornerRadius: cornerRadius))
+
+            content
+                .offset(x: offset)
+                .contentShape(Rectangle())
+                .allowsHitTesting(!isRevealed)
+                // .highPriorityGesture (rather than .gesture) so this wins
+                // over NavigationLink's own tap recognizer — otherwise a
+                // left-swipe on the row gets read as a tap and navigates
+                // instead of revealing Delete. Only claiming the gesture
+                // once movement is clearly more horizontal than vertical
+                // keeps the ScrollView's vertical scroll working when a
+                // drag starts on top of one of these rows.
+                .highPriorityGesture(
+                    DragGesture(minimumDistance: 15)
+                        .onChanged { value in
+                            guard abs(value.translation.width) > abs(value.translation.height) else { return }
+                            guard value.translation.width < 0 || isRevealed else { return }
+                            offset = min(0, max(value.translation.width - (isRevealed ? deleteWidth : 0), -deleteWidth))
+                        }
+                        .onEnded { value in
+                            withAnimation(.snappy) {
+                                if offset < -deleteWidth / 2 {
+                                    offset = -deleteWidth
+                                    isRevealed = true
+                                } else {
+                                    offset = 0
+                                    isRevealed = false
+                                }
+                            }
+                        }
+                )
+
+            if isRevealed {
+                Color.black.opacity(0.001)
+                    .padding(.trailing, deleteWidth)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        withAnimation(.snappy) {
+                            offset = 0
+                            isRevealed = false
+                        }
+                    }
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+    }
 }
