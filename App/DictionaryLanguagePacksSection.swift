@@ -36,6 +36,17 @@ struct DictionaryLanguagePacksSection: View {
         Locale.current.language
     }
 
+    /// True when a row's language is (the base language of) the device's
+    /// own OS language — e.g. English on an en-US device. Translating a
+    /// language to itself isn't a meaningful pair, so status(from:to:)
+    /// reads these back as .unsupported even though the definitions are
+    /// already there for free as part of the OS. Compared by language
+    /// code only (ignoring region/script) so e.g. English matches en-US,
+    /// en-GB, en-AU alike.
+    private func isDeviceOwnLanguage(_ language: SupportedLanguage) -> Bool {
+        language.locale.language.languageCode?.identifier == deviceLanguage.languageCode?.identifier
+    }
+
     var body: some View {
         Section {
             ForEach(sortedLanguages, id: \.self) { language in
@@ -105,26 +116,32 @@ struct DictionaryLanguagePacksSection: View {
         HStack {
             Text(language.displayName)
             Spacer()
-            switch statuses[language] {
-            case .installed:
-                Label("Downloaded", systemImage: "checkmark.circle.fill")
-                    .labelStyle(.iconOnly)
-                    .foregroundStyle(.green)
-            case .unsupported:
-                Text("Unavailable")
+            if isDeviceOwnLanguage(language) {
+                Text("Default Dictionary")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
-            case .supported, .none:
-                if pendingLanguage == language {
-                    ProgressView()
-                } else {
-                    Button("Download") {
-                        confirmDownload(for: language)
+            } else {
+                switch statuses[language] {
+                case .installed:
+                    Label("Downloaded", systemImage: "checkmark.circle.fill")
+                        .labelStyle(.iconOnly)
+                        .foregroundStyle(.green)
+                case .unsupported:
+                    Text("Unavailable")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                case .supported, .none:
+                    if pendingLanguage == language {
+                        ProgressView()
+                    } else {
+                        Button("Download") {
+                            confirmDownload(for: language)
+                        }
+                        .buttonStyle(.borderless)
                     }
-                    .buttonStyle(.borderless)
+                @unknown default:
+                    EmptyView()
                 }
-            @unknown default:
-                EmptyView()
             }
         }
     }
@@ -153,7 +170,7 @@ struct DictionaryLanguagePacksSection: View {
 
     private func refreshAllStatuses() async {
         let availability = LanguageAvailability()
-        for language in sortedLanguages {
+        for language in sortedLanguages where !isDeviceOwnLanguage(language) {
             statuses[language] = await availability.status(from: language.locale.language, to: deviceLanguage)
         }
     }
