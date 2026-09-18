@@ -7,6 +7,7 @@ enum AppSettings {
     static let enabledLanguagesKey = "enabledLanguagesRawValues"
     static let colorSchemeKey = "preferredColorSchemeRawValue"
     static let hasCompletedFirstHomeLaunchKey = "hasCompletedFirstHomeLaunch"
+    static let defaultImportLanguageKey = "defaultImportLanguageRawValue"
 
     /// Shown before the user has ever visited Settings. All 46 languages
     /// enabled by default read as overwhelming in the import picker — a
@@ -27,6 +28,23 @@ enum AppSettings {
 
     static func rawValue(from languages: Set<SupportedLanguage>) -> String {
         languages.map(\.rawValue).joined(separator: ",")
+    }
+
+    /// The language of the most recently connected local dictionary (see
+    /// ConnectLocalDictionaryView), used to pre-select new Sample imports
+    /// so terms parse against the dictionary the user just connected
+    /// without them having to re-pick it every time. Falls back to the
+    /// first enabled language when nothing's connected, or that language
+    /// has since been turned off in "Languages shown on import".
+    static func preferredDefaultLanguage(enabledLanguages: [SupportedLanguage]) -> SupportedLanguage {
+        if
+            let raw = UserDefaults.standard.string(forKey: defaultImportLanguageKey),
+            let language = SupportedLanguage(rawValue: raw),
+            enabledLanguages.contains(language)
+        {
+            return language
+        }
+        return enabledLanguages.first ?? .chineseTraditional
     }
 }
 

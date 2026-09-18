@@ -382,9 +382,7 @@ struct SamplesView: View {
     }
 
     private func presentLanguageSheet() {
-        if !enabledLanguages.contains(pendingLanguage) {
-            pendingLanguage = enabledLanguages.first ?? .chineseTraditional
-        }
+        pendingLanguage = AppSettings.preferredDefaultLanguage(enabledLanguages: enabledLanguages)
         isLanguageSheetPresented = true
     }
 
@@ -423,9 +421,7 @@ struct SamplesView: View {
     }
 
     private func presentGenerateLanguageSheet() {
-        if !enabledLanguages.contains(pendingGenerateLanguage) {
-            pendingGenerateLanguage = enabledLanguages.first ?? .chineseTraditional
-        }
+        pendingGenerateLanguage = AppSettings.preferredDefaultLanguage(enabledLanguages: enabledLanguages)
         isGenerateLanguageSheetPresented = true
     }
 
@@ -504,16 +500,12 @@ struct SamplesView: View {
     }
 
     private func presentTextSampleLanguageSheet() {
-        if !enabledLanguages.contains(pendingTextSampleLanguage) {
-            pendingTextSampleLanguage = enabledLanguages.first ?? .chineseTraditional
-        }
+        pendingTextSampleLanguage = AppSettings.preferredDefaultLanguage(enabledLanguages: enabledLanguages)
         isTextSampleLanguageSheetPresented = true
     }
 
     private func presentRecordLanguageSheet() {
-        if !enabledLanguages.contains(pendingRecordLanguage) {
-            pendingRecordLanguage = enabledLanguages.first ?? .chineseTraditional
-        }
+        pendingRecordLanguage = AppSettings.preferredDefaultLanguage(enabledLanguages: enabledLanguages)
         isRecordLanguageSheetPresented = true
     }
 

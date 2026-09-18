@@ -6,6 +6,8 @@ struct SettingsView: View {
     @AppStorage(AppSettings.colorSchemeKey) private var colorSchemeRaw: String = AppColorScheme.system.rawValue
     @State private var languageSearchText = ""
     @State private var dictionaryPackInterstitialLanguage: SupportedLanguage?
+    @State private var isConnectDictionaryPresented = false
+    @State private var connectedDictionary: ConnectedDictionary? = ConnectedDictionaryStore.load()
 
     private var enabledLanguages: Set<SupportedLanguage> {
         AppSettings.languages(from: enabledLanguagesRaw)
@@ -35,8 +37,28 @@ struct SettingsView: View {
                 } label: {
                     Label("Custom Glossary", systemImage: "character.book.closed")
                 }
+
+                Button {
+                    isConnectDictionaryPresented = true
+                } label: {
+                    if let connectedDictionary {
+                        Label {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Connect Local Dictionary")
+                                Text("\(connectedDictionary.fileName) · \(connectedDictionary.language.displayName)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        } icon: {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.green)
+                        }
+                    } else {
+                        Label("Connect Local Dictionary", systemImage: "folder.badge.plus")
+                    }
+                }
             } footer: {
-                Text("Add your own term definitions — useful for specialized vocabulary an on-device model might not know, and still works on devices without one.")
+                Text("Add your own term definitions — useful for specialized vocabulary an on-device model might not know, and still works on devices without one. Connect a dictionary file from Files to bulk-import its terms instead of typing them in one at a time.")
             }
 
             Section {
@@ -45,7 +67,18 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(filteredLanguages, id: \.self) { language in
-                        Toggle(language.displayName, isOn: binding(for: language))
+                        Toggle(isOn: binding(for: language)) {
+                            if connectedDictionary?.language == language {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(language.displayName)
+                                    Text("Connected dictionary")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            } else {
+                                Text(language.displayName)
+                            }
+                        }
                     }
                 }
             } header: {
@@ -65,6 +98,11 @@ struct SettingsView: View {
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $languageSearchText, prompt: "Search Languages")
+        .sheet(isPresented: $isConnectDictionaryPresented, onDismiss: {
+            connectedDictionary = ConnectedDictionaryStore.load()
+        }) {
+            ConnectLocalDictionaryView()
+        }
         .alert(
             "No On-Device Model",
             isPresented: Binding(
