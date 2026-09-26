@@ -51,7 +51,7 @@ actor SpeechTranscriberService {
         // 2. Make sure the on-device model assets for this locale are present.
         //    This may trigger a one-time network download; recognition itself
         //    runs fully on-device once assets are installed.
-        try await ensureAssetsInstalled(for: transcriber)
+        try await ensureAssetsInstalled(for: transcriber, locale: resolvedLocale)
 
         // 3. Normalize the input file to something AVAudioFile opens reliably.
         let m4aURL = try await AudioTranscoder.ensureM4A(at: url)
@@ -86,14 +86,81 @@ actor SpeechTranscriberService {
         return TranscriptionResult(fullText: fullText, segments: segments)
     }
 
-    private func ensureAssetsInstalled(for transcriber: SpeechTranscriber) async throws {
+    private func ensureAssetsInstalled(for transcriber: SpeechTranscriber, locale: Locale) async throws {
         do {
+            await makeRoomForReservation(of: locale)
             if let request = try await AssetInventory.assetInstallationRequest(supporting: [transcriber]) {
                 try await request.downloadAndInstall()
             }
             // If the request comes back nil, assets are already installed.
+            SpeechLocaleUsage.markUsed(locale)
         } catch {
             throw TranscriptionError.assetInstallFailed(language, error.localizedDescription)
         }
+    }
+
+    /// Installing a speech model implicitly reserves its locale for this app,
+    /// and the system caps reservations at AssetInventory.maximumReservedLocales
+    /// (5 on iOS 26). Reservations persist across launches and app updates and
+    /// are never released on their own — so every language ever transcribed
+    /// keeps a slot, even after it's turned off in Settings, until the next
+    /// install fails with "Too many allocated locales".
+    ///
+    /// Before reserving a new locale, release (1) any reserved locale whose
+    /// language is no longer enabled in Settings, then (2) if still full —
+    /// more than 5 languages enabled — the least recently transcribed ones.
+    /// A released model may be purged by the system and re-downloaded the
+    /// next time that language is used; nothing the user saved is affected.
+    private func makeRoomForReservation(of locale: Locale) async {
+        let target = locale.identifier(.bcp47)
+        let reserved = await AssetInventory.reservedLocales
+        guard !reserved.contains(where: { $0.identifier(.bcp47) == target }) else { return }
+
+        let enabled = AppSettings.languages(
+            from: UserDefaults.standard.string(forKey: AppSettings.enabledLanguagesKey) ?? ""
+        )
+        var enabledIdentifiers: Set<String> = [target]
+        for language in enabled {
+            if let resolved = await SpeechTranscriber.supportedLocale(equivalentTo: language.locale) {
+                enabledIdentifiers.insert(resolved.identifier(.bcp47))
+            }
+        }
+
+        var stillReserved: [Locale] = []
+        for reservedLocale in reserved {
+            if enabledIdentifiers.contains(reservedLocale.identifier(.bcp47)) {
+                stillReserved.append(reservedLocale)
+            } else {
+                await AssetInventory.release(reservedLocale: reservedLocale)
+            }
+        }
+
+        let overflow = stillReserved.count - AssetInventory.maximumReservedLocales + 1
+        guard overflow > 0 else { return }
+        let lastUsed = SpeechLocaleUsage.lastUsedDates()
+        let leastRecentFirst = stillReserved.sorted {
+            (lastUsed[$0.identifier(.bcp47)] ?? .distantPast) < (lastUsed[$1.identifier(.bcp47)] ?? .distantPast)
+        }
+        for reservedLocale in leastRecentFirst.prefix(overflow) {
+            await AssetInventory.release(reservedLocale: reservedLocale)
+        }
+    }
+}
+
+/// When each speech locale was last transcribed with, so that when more
+/// languages are enabled than the system's reservation cap allows, the
+/// least recently used one gives up its slot rather than an arbitrary one.
+private enum SpeechLocaleUsage {
+    private static let key = "speechLocaleLastUsedDates"
+
+    static func lastUsedDates() -> [String: Date] {
+        let raw = UserDefaults.standard.dictionary(forKey: key) as? [String: Double] ?? [:]
+        return raw.mapValues { Date(timeIntervalSince1970: $0) }
+    }
+
+    static func markUsed(_ locale: Locale) {
+        var raw = UserDefaults.standard.dictionary(forKey: key) as? [String: Double] ?? [:]
+        raw[locale.identifier(.bcp47)] = Date.now.timeIntervalSince1970
+        UserDefaults.standard.set(raw, forKey: key)
     }
 }
