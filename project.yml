@@ -92,6 +92,7 @@ targets:
           NSExtensionAttributes:
             NSExtensionActivationRule:
               NSExtensionActivationSupportsFileWithMaxCount: 1
+              NSExtensionActivationSupportsImageWithMaxCount: 1
               NSExtensionActivationSupportsMovieWithMaxCount: 1
               NSExtensionActivationSupportsText: true
     entitlements:

@@ -58,12 +58,23 @@ enum ImageIngestion {
         )
     }
 
-    private static func recognizeText(in imageData: Data, language: SupportedLanguage) throws -> String {
+    /// Also used directly by SharedContainer for photos handed to the Share
+    /// Extension, which become plain text samples rather than image samples.
+    static func recognizeText(in imageData: Data, language: SupportedLanguage) throws -> String {
         let handler = VNImageRequestHandler(data: imageData, options: [:])
         let request = VNRecognizeTextRequest()
         request.recognitionLevel = .accurate
         request.usesLanguageCorrection = false
-        request.recognitionLanguages = [language.locale.identifier(.bcp47)]
+        if let visionLanguage = visionRecognitionLanguage(for: language, request: request) {
+            request.recognitionLanguages = [visionLanguage]
+        } else {
+            // Vision's OCR covers far fewer languages than transcription
+            // does (no Devanagari, Tamil, Hebrew, Greek, ... at the time of
+            // writing), and custom languages have no locale at all. Passing
+            // an unsupported code makes perform() throw, so let Vision pick
+            // the closest script it knows instead.
+            request.automaticallyDetectsLanguage = true
+        }
 
         do {
             try handler.perform([request])
@@ -75,6 +86,27 @@ enum ImageIngestion {
         return observations
             .compactMap { $0.topCandidates(1).first?.string }
             .joined(separator: "\n")
+    }
+
+    /// Maps a SupportedLanguage to the exact identifier Vision advertises
+    /// for it (e.g. zh-Hant-TW → "zh-Hant", fr-FR → "fr-FR"), matching on
+    /// language + script so Traditional and Simplified Chinese stay distinct.
+    /// nil when Vision can't recognize that language's text.
+    private static func visionRecognitionLanguage(for language: SupportedLanguage, request: VNRecognizeTextRequest) -> String? {
+        guard !language.isCustom,
+              let supported = try? request.supportedRecognitionLanguages() else { return nil }
+
+        func scriptKey(_ identifier: String) -> String {
+            let maximal = Locale.Language(identifier: Locale.Language(identifier: identifier).maximalIdentifier)
+            return "\(maximal.languageCode?.identifier ?? "")-\(maximal.script?.identifier ?? "")"
+        }
+
+        let wanted = language.locale.identifier(.bcp47)
+        if let exact = supported.first(where: { $0.caseInsensitiveCompare(wanted) == .orderedSame }) {
+            return exact
+        }
+        let wantedKey = scriptKey(wanted)
+        return supported.first { scriptKey($0) == wantedKey }
     }
 
     private static func imagesDirectory() throws -> URL {
