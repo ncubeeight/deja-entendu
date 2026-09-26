@@ -96,6 +96,18 @@ enum FlashcardGenerator {
         consonant clusters like 'zh', 'q', 'x', or 'dsh'.
         """
 
+        // Same problem as Japanese from the other direction: the model's
+        // default for hanzi is Mandarin, both in how it sounds a term out
+        // and in writing Standard Written Chinese example sentences.
+        let cantoneseWarning = """
+         This is Cantonese, not Mandarin — pronounce the term as it sounds \
+        in Cantonese (e.g. 你好 → 'nay-HOH', 唔該 → 'm-GOY'), never with \
+        Mandarin pinyin readings like 'nee-how'. Write the example sentence \
+        in colloquial spoken Cantonese as a native speaker would text it \
+        (using 係, 唔, 嘅, 咗, 喺 where natural), not Standard Written Chinese.
+        """
+        let isCantonese = language == .cantoneseTraditional || language == .cantoneseSimplified
+
         let instructions: String
         if let language {
             instructions = """
@@ -108,7 +120,8 @@ enum FlashcardGenerator {
             sentence's English translation. The pronunciation guide must \
             cover the term's full length, every syllable from start to \
             finish — never just a stem or the first part of a longer word.\
-            \(language == .japanese ? japaneseKanjiWarning : "") \
+            \(language == .japanese ? japaneseKanjiWarning : "")\
+            \(isCantonese ? cantoneseWarning : "") \
             The example sentence must be written entirely in \(language.displayName), \
             in its native script, and must contain the term itself verbatim. \
             It is NOT the translation field — never write an English dictionary \

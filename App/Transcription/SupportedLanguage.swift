@@ -13,6 +13,8 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
 
     static let chineseTraditional = SupportedLanguage(builtIn: "chineseTraditional")
     static let chineseSimplified = SupportedLanguage(builtIn: "chineseSimplified")
+    static let cantoneseTraditional = SupportedLanguage(builtIn: "cantoneseTraditional")
+    static let cantoneseSimplified = SupportedLanguage(builtIn: "cantoneseSimplified")
     static let japanese = SupportedLanguage(builtIn: "japanese")
     static let german = SupportedLanguage(builtIn: "german")
     static let french = SupportedLanguage(builtIn: "french")
@@ -55,6 +57,8 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
     static let builtIns: [SupportedLanguage] = [
         .chineseTraditional,
         .chineseSimplified,
+        .cantoneseTraditional,
+        .cantoneseSimplified,
         .japanese,
         .german,
         .french,
@@ -136,6 +140,16 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
             Locale(components: .init(languageCode: .chinese, script: .hanTraditional, languageRegion: .taiwan))
         case .chineseSimplified:
             Locale(components: .init(languageCode: .chinese, script: .hanSimplified, languageRegion: .chinaMainland))
+        // Cantonese as spoken in Hong Kong (Traditional) vs Guangdong
+        // (Simplified). SpeechTranscriber resolves these to its zh-HK and
+        // yue-CN models respectively (both Cantonese — zh-HK is Apple's
+        // identifier for Hong Kong Cantonese, not Mandarin), and Vision to
+        // yue-Hant / yue-Hans. Taishanese has no speech, OCR, or voice
+        // support in any Apple framework as of iOS 26, so isn't listed.
+        case .cantoneseTraditional:
+            Locale(identifier: "yue-Hant-HK")
+        case .cantoneseSimplified:
+            Locale(identifier: "yue-Hans-CN")
         case .japanese:
             Locale(identifier: "ja-JP")
         case .german:
@@ -227,10 +241,16 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
     /// segmentation. Since all five are Latin-script, space-delimited
     /// languages, this should still segment reasonably, just without the
     /// language-specific tuning the other cases get.
+    /// Cantonese has no NLLanguage constant either, but unlike those five it
+    /// has no spaces to fall back on — the Chinese tokenizer for the same
+    /// script segments it far better than .undetermined would, though
+    /// colloquial-only characters (唔, 嘅, 咗, ...) may split less cleanly.
     var nlLanguage: NLLanguage {
         switch self {
         case .chineseTraditional: .traditionalChinese
         case .chineseSimplified: .simplifiedChinese
+        case .cantoneseTraditional: .traditionalChinese
+        case .cantoneseSimplified: .simplifiedChinese
         case .japanese: .japanese
         case .german: .german
         case .french: .french
@@ -277,6 +297,8 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
         switch self {
         case .chineseTraditional: "Chinese (Traditional)"
         case .chineseSimplified: "Chinese (Simplified)"
+        case .cantoneseTraditional: "Cantonese (Traditional)"
+        case .cantoneseSimplified: "Cantonese (Simplified)"
         case .japanese: "Japanese"
         case .german: "German"
         case .french: "French"
