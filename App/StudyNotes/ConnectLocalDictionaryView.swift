@@ -6,12 +6,15 @@ import PDFKit
 /// exported from somewhere else, picked from Files/iCloud Drive/On My
 /// iPhone — as an addition to the glossary, rather than typing each term
 /// in by hand (AddGlossaryEntryView) or downloading one of Apple's own
-/// Translate packs (DictionaryLanguagePacksSection). Only one local
-/// dictionary is connected at a time: connecting a new file replaces the
-/// terms the previous one contributed (tracked via GlossarySource) without
-/// touching anything the user typed in themselves. The connected
-/// dictionary's language also becomes the default pre-selected language
-/// for new Samples going forward (see AppSettings.preferredDefaultLanguage).
+/// Translate packs (DictionaryLanguagePacksSection). Any number of
+/// dictionaries can be connected; each keeps its own terms (tagged via
+/// GlossaryEntry.dictionaryID) so it can be browsed or disconnected on its
+/// own from the Custom Glossary page. The connected dictionary's language
+/// also becomes the default pre-selected language for new Samples (see
+/// AppSettings.preferredDefaultLanguage). If the file is in a language the
+/// app doesn't list — Navajo, say — choosing "Other language…" adds it as
+/// a new language that then appears in Settings' "Languages shown on
+/// import" like any other, where it can be toggled on and off.
 ///
 /// Understands two source layouts:
 /// - A plain two-column word list (term/definition per line, separated by
@@ -24,10 +27,13 @@ import PDFKit
 struct ConnectLocalDictionaryView: View {
     @Environment(\.dismiss) private var dismiss
 
-    @State private var connected: ConnectedDictionary? = ConnectedDictionaryStore.load()
-    @State private var isReplacing = false
+    private enum LanguageChoice: Hashable {
+        case listed(SupportedLanguage)
+        case other
+    }
 
-    @State private var language: SupportedLanguage = .chineseTraditional
+    @State private var choice: LanguageChoice = .listed(.chineseTraditional)
+    @State private var otherLanguageName = ""
     @State private var isFileImporterPresented = false
     @State private var fileName: String?
     @State private var pendingBookmarkData: Data?
@@ -51,6 +57,21 @@ struct ConnectLocalDictionaryView: View {
         SupportedLanguage.allCases.sorted { $0.displayName < $1.displayName }
     }
 
+    private var trimmedOtherName: String {
+        otherLanguageName.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// The language the file will be tagged with, or nil while "Other
+    /// language…" is chosen but no name has been typed yet.
+    private var selectedLanguage: SupportedLanguage? {
+        switch choice {
+        case .listed(let language): return language
+        case .other:
+            guard !trimmedOtherName.isEmpty else { return nil }
+            return SupportedLanguage.allCases.first { $0.displayName.caseInsensitiveCompare(trimmedOtherName) == .orderedSame }
+        }
+    }
+
     private let acceptedTypes: [UTType] = [.pdf, .plainText, .utf8PlainText, .commaSeparatedText, .tabSeparatedText, .text]
 
     struct ParsedEntry: Identifiable {
@@ -61,95 +82,50 @@ struct ConnectLocalDictionaryView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if let connected, !isReplacing {
-                    connectedSummary(connected)
-                } else {
-                    connectForm
-                }
-            }
-            .navigationTitle("Connect Local Dictionary")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                if connected == nil || isReplacing {
+            connectForm
+                .navigationTitle("Connect Local Dictionary")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("Cancel") {
-                            if connected != nil {
-                                isReplacing = false
-                            } else {
-                                dismiss()
-                            }
-                        }
+                        Button("Cancel") { dismiss() }
                     }
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Connect") { connect() }
-                            .disabled(parsedEntries.isEmpty || isParsing)
-                    }
-                } else {
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Done") { dismiss() }
+                            .disabled(parsedEntries.isEmpty || isParsing || (choice == .other && trimmedOtherName.isEmpty))
                     }
                 }
-            }
-            .fileImporter(isPresented: $isFileImporterPresented, allowedContentTypes: acceptedTypes) { result in
-                handleFileImport(result)
-            }
-            .alert("Couldn't import that file", isPresented: Binding(
-                get: { importError != nil },
-                set: { if !$0 { importError = nil } }
-            )) {
-                Button("OK") { importError = nil }
-            } message: {
-                Text(importError ?? "")
-            }
+                .fileImporter(isPresented: $isFileImporterPresented, allowedContentTypes: acceptedTypes) { result in
+                    handleFileImport(result)
+                }
+                .alert("Couldn't import that file", isPresented: Binding(
+                    get: { importError != nil },
+                    set: { if !$0 { importError = nil } }
+                )) {
+                    Button("OK") { importError = nil }
+                } message: {
+                    Text(importError ?? "")
+                }
         }
         .presentationDetents([.medium, .large])
-    }
-
-    @ViewBuilder
-    private func connectedSummary(_ connected: ConnectedDictionary) -> some View {
-        Form {
-            Section {
-                LabeledContent("File", value: connected.fileName)
-                LabeledContent("Language", value: connected.language.displayName)
-                LabeledContent("Terms", value: "\(connected.termCount)")
-                LabeledContent("Connected", value: connected.connectedAt.formatted(date: .abbreviated, time: .shortened))
-            } footer: {
-                Text("This dictionary's terms are in your Custom Glossary, and \(connected.language.displayName) is now the default language suggested for new Samples.")
-            }
-
-            Section {
-                Toggle("Show as a Samples Language", isOn: samplesVisibilityBinding(for: connected.language))
-            } footer: {
-                Text("Lets you pick \(connected.language.displayName) when adding a new audio, text, or photo Sample, so terms from this dictionary can be cross-referenced while processing it. Turning this off hides the language from Samples without disconnecting the dictionary.")
-            }
-
-            Section {
-                Button("Connect a Different File") {
-                    fileName = nil
-                    pendingBookmarkData = nil
-                    parsedEntries = []
-                    duplicateCount = 0
-                    isReplacing = true
-                }
-                Button("Disconnect", role: .destructive) {
-                    disconnect()
-                }
-            }
-        }
     }
 
     @ViewBuilder
     private var connectForm: some View {
         Form {
             Section {
-                Picker("Language", selection: $language) {
+                Picker("Language", selection: $choice) {
+                    Text("Other language…").tag(LanguageChoice.other)
+                    Divider()
                     ForEach(allLanguagesSorted, id: \.self) { language in
-                        Text(language.displayName).tag(language)
+                        Text(language.displayName).tag(LanguageChoice.listed(language))
                     }
                 }
+                if choice == .other {
+                    TextField("Language name (e.g. Navajo)", text: $otherLanguageName)
+                        .autocorrectionDisabled()
+                }
             } footer: {
-                Text("Every term in the file is tagged with this language. Once connected, it becomes the default for new Samples and is automatically shown as a Samples language, even if it wasn't already.")
+                Text("Every term in the file is tagged with this language. Once connected, it becomes the default for new Samples and is shown in Settings' language list, where you can turn it on and off. A language that isn't listed is added there for you.")
             }
 
             Section {
@@ -198,11 +174,10 @@ struct ConnectLocalDictionaryView: View {
             }
         }
         .onAppear {
-            language = connected?.language ?? AppSettings.preferredDefaultLanguage(enabledLanguages: enabledLanguages)
+            choice = .listed(AppSettings.preferredDefaultLanguage(enabledLanguages: enabledLanguages))
         }
-        .onChange(of: language) { _, _ in
-            recomputeDuplicates()
-        }
+        .onChange(of: choice) { _, _ in recomputeDuplicates() }
+        .onChange(of: otherLanguageName) { _, _ in recomputeDuplicates() }
     }
 
     private func handleFileImport(_ result: Result<URL, Error>) {
@@ -253,7 +228,14 @@ struct ConnectLocalDictionaryView: View {
         }
     }
 
+    /// Only hand-typed terms count as duplicates — the same word in two
+    /// different connected dictionaries is legitimate (each keeps its own
+    /// definition), so other dictionaries' terms are never skipped.
     private func recomputeDuplicates() {
+        guard let language = selectedLanguage else {
+            duplicateCount = 0
+            return
+        }
         let manualKeys = Set(
             GlossaryStore.load()
                 .filter { $0.source == .manual }
@@ -392,24 +374,33 @@ struct ConnectLocalDictionaryView: View {
     private func connect() {
         guard let bookmarkData = pendingBookmarkData, let connectedFileName = fileName else { return }
 
-        var existing = GlossaryStore.load()
-        existing.removeAll { $0.source == .connectedDictionary }
+        let language: SupportedLanguage
+        switch choice {
+        case .listed(let listed): language = listed
+        case .other: language = CustomLanguageStore.register(name: trimmedOtherName)
+        }
 
-        var seenKeys = Set(existing.map { "\($0.language.rawValue)::\($0.term.lowercased())" })
+        let dictionaryID = UUID()
+        var existing = GlossaryStore.load()
+
+        var seenKeys = Set(
+            existing.filter { $0.source == .manual }.map { "\($0.language.rawValue)::\($0.term.lowercased())" }
+        )
+        var added = 0
         for parsed in parsedEntries {
             let key = "\(language.rawValue)::\(parsed.term.lowercased())"
             guard !seenKeys.contains(key) else { continue }
             seenKeys.insert(key)
             existing.insert(
-                GlossaryEntry(id: UUID(), term: parsed.term, definition: parsed.definition, language: language, addedAt: .now, source: .connectedDictionary),
+                GlossaryEntry(id: UUID(), term: parsed.term, definition: parsed.definition, language: language, addedAt: .now, source: .connectedDictionary, dictionaryID: dictionaryID),
                 at: 0
             )
+            added += 1
         }
         GlossaryStore.save(existing)
 
-        let connectedCount = existing.filter { $0.source == .connectedDictionary }.count
-        ConnectedDictionaryStore.save(
-            ConnectedDictionary(fileName: connectedFileName, language: language, connectedAt: .now, termCount: connectedCount, bookmarkData: bookmarkData)
+        ConnectedDictionaryStore.add(
+            ConnectedDictionary(id: dictionaryID, fileName: connectedFileName, language: language, connectedAt: .now, termCount: added, bookmarkData: bookmarkData)
         )
         UserDefaults.standard.set(language.rawValue, forKey: AppSettings.defaultImportLanguageKey)
 
@@ -421,43 +412,7 @@ struct ConnectLocalDictionaryView: View {
         enabled.insert(language)
         enabledLanguagesRaw = AppSettings.rawValue(from: enabled)
 
-        connected = ConnectedDictionaryStore.load()
-        isReplacing = false
-        fileName = nil
-        pendingBookmarkData = nil
-        parsedEntries = []
-    }
-
-    /// Whether `language` is included in "Languages shown on import" —
-    /// i.e. selectable when adding a new Sample. Mirrors SettingsView's own
-    /// per-language toggle, with the same "at least one must stay on"
-    /// guard, so this can't be used to lock the user out of every language.
-    private func samplesVisibilityBinding(for language: SupportedLanguage) -> Binding<Bool> {
-        Binding(
-            get: {
-                AppSettings.languages(from: enabledLanguagesRaw).contains(language)
-            },
-            set: { isOn in
-                var enabled = AppSettings.languages(from: enabledLanguagesRaw)
-                if isOn {
-                    enabled.insert(language)
-                } else {
-                    guard enabled.count > 1 else { return }
-                    enabled.remove(language)
-                }
-                enabledLanguagesRaw = AppSettings.rawValue(from: enabled)
-            }
-        )
-    }
-
-    private func disconnect() {
-        var existing = GlossaryStore.load()
-        existing.removeAll { $0.source == .connectedDictionary }
-        GlossaryStore.save(existing)
-
-        ConnectedDictionaryStore.clear()
-        UserDefaults.standard.removeObject(forKey: AppSettings.defaultImportLanguageKey)
-        connected = nil
+        dismiss()
     }
 }
 

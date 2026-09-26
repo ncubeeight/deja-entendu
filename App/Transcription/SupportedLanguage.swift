@@ -4,47 +4,131 @@ import NaturalLanguage
 /// Languages the transcription pipeline can detect and transcribe. Adding a
 /// new language means adding a case here — everything else (the picker,
 /// transcription, study notes) reads from this list.
-enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
-    case chineseTraditional
-    case chineseSimplified
-    case japanese
-    case german
-    case french
-    case spanish
-    case thai
-    case korean
-    case vietnamese
-    case hindi
-    case tamil
-    case gujarati
-    case italian
-    case portuguese
-    case danish
-    case dutch
-    case norwegian
-    case swedish
-    case turkish
-    case english
-    case bengali
-    case punjabi
-    case urdu
-    case greek
-    case hebrew
-    case russian
-    case ukrainian
-    case indonesian
-    case marathi
-    case swahili
-    case tagalog
-    case yoruba
-    case quechua
-    case telugu
-    case kannada
-    case amharic
-    case finnish
-    case estonian
-    case polish
-    case arabic
+struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
+    let rawValue: String
+
+    private init(builtIn rawValue: String) {
+        self.rawValue = rawValue
+    }
+
+    static let chineseTraditional = SupportedLanguage(builtIn: "chineseTraditional")
+    static let chineseSimplified = SupportedLanguage(builtIn: "chineseSimplified")
+    static let japanese = SupportedLanguage(builtIn: "japanese")
+    static let german = SupportedLanguage(builtIn: "german")
+    static let french = SupportedLanguage(builtIn: "french")
+    static let spanish = SupportedLanguage(builtIn: "spanish")
+    static let thai = SupportedLanguage(builtIn: "thai")
+    static let korean = SupportedLanguage(builtIn: "korean")
+    static let vietnamese = SupportedLanguage(builtIn: "vietnamese")
+    static let hindi = SupportedLanguage(builtIn: "hindi")
+    static let tamil = SupportedLanguage(builtIn: "tamil")
+    static let gujarati = SupportedLanguage(builtIn: "gujarati")
+    static let italian = SupportedLanguage(builtIn: "italian")
+    static let portuguese = SupportedLanguage(builtIn: "portuguese")
+    static let danish = SupportedLanguage(builtIn: "danish")
+    static let dutch = SupportedLanguage(builtIn: "dutch")
+    static let norwegian = SupportedLanguage(builtIn: "norwegian")
+    static let swedish = SupportedLanguage(builtIn: "swedish")
+    static let turkish = SupportedLanguage(builtIn: "turkish")
+    static let english = SupportedLanguage(builtIn: "english")
+    static let bengali = SupportedLanguage(builtIn: "bengali")
+    static let punjabi = SupportedLanguage(builtIn: "punjabi")
+    static let urdu = SupportedLanguage(builtIn: "urdu")
+    static let greek = SupportedLanguage(builtIn: "greek")
+    static let hebrew = SupportedLanguage(builtIn: "hebrew")
+    static let russian = SupportedLanguage(builtIn: "russian")
+    static let ukrainian = SupportedLanguage(builtIn: "ukrainian")
+    static let indonesian = SupportedLanguage(builtIn: "indonesian")
+    static let marathi = SupportedLanguage(builtIn: "marathi")
+    static let swahili = SupportedLanguage(builtIn: "swahili")
+    static let tagalog = SupportedLanguage(builtIn: "tagalog")
+    static let yoruba = SupportedLanguage(builtIn: "yoruba")
+    static let quechua = SupportedLanguage(builtIn: "quechua")
+    static let telugu = SupportedLanguage(builtIn: "telugu")
+    static let kannada = SupportedLanguage(builtIn: "kannada")
+    static let amharic = SupportedLanguage(builtIn: "amharic")
+    static let finnish = SupportedLanguage(builtIn: "finnish")
+    static let estonian = SupportedLanguage(builtIn: "estonian")
+    static let polish = SupportedLanguage(builtIn: "polish")
+    static let arabic = SupportedLanguage(builtIn: "arabic")
+
+    static let builtIns: [SupportedLanguage] = [
+        .chineseTraditional,
+        .chineseSimplified,
+        .japanese,
+        .german,
+        .french,
+        .spanish,
+        .thai,
+        .korean,
+        .vietnamese,
+        .hindi,
+        .tamil,
+        .gujarati,
+        .italian,
+        .portuguese,
+        .danish,
+        .dutch,
+        .norwegian,
+        .swedish,
+        .turkish,
+        .english,
+        .bengali,
+        .punjabi,
+        .urdu,
+        .greek,
+        .hebrew,
+        .russian,
+        .ukrainian,
+        .indonesian,
+        .marathi,
+        .swahili,
+        .tagalog,
+        .yoruba,
+        .quechua,
+        .telugu,
+        .kannada,
+        .amharic,
+        .finnish,
+        .estonian,
+        .polish,
+        .arabic
+    ]
+
+    /// Built-in languages plus any the user added by connecting a
+    /// dictionary in a language not listed above (see CustomLanguageStore) —
+    /// e.g. Navajo. Read fresh each time so a newly added language shows up
+    /// in every picker/Settings list immediately.
+    static var allCases: [SupportedLanguage] {
+        builtIns + CustomLanguageStore.load()
+    }
+
+    /// nil for a raw value that's neither built in nor a registered custom
+    /// language, so stale values in persisted settings are ignored.
+    init?(rawValue: String) {
+        if let builtIn = Self.builtIns.first(where: { $0.rawValue == rawValue }) {
+            self = builtIn
+        } else if CustomLanguageStore.name(forRawValue: rawValue) != nil {
+            self.rawValue = rawValue
+        } else {
+            return nil
+        }
+    }
+
+    /// Encoded as its bare raw-value string, same as when this was a
+    /// String-backed enum, so previously saved files still decode. Decoding
+    /// doesn't require the language to still be registered — a saved term
+    /// tagged with a language later removed keeps its tag.
+    init(from decoder: Decoder) throws {
+        rawValue = try decoder.singleValueContainer().decode(String.self)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(rawValue)
+    }
+
+    var isCustom: Bool { rawValue.hasPrefix(CustomLanguageStore.prefix) }
 
     var locale: Locale {
         switch self {
@@ -128,6 +212,8 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
             Locale(identifier: "pl-PL")
         case .arabic:
             Locale(identifier: "ar-SA")
+        default:
+            Locale(identifier: "und")
         }
     }
 
@@ -183,6 +269,7 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
         case .estonian: .undetermined
         case .polish: .polish
         case .arabic: .arabic
+        default: .undetermined
         }
     }
 
@@ -228,6 +315,7 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
         case .estonian: "Estonian"
         case .polish: "Polish"
         case .arabic: "Arabic"
+        default: CustomLanguageStore.name(forRawValue: rawValue) ?? rawValue
         }
     }
 
@@ -241,4 +329,59 @@ enum SupportedLanguage: String, CaseIterable, Sendable, Codable {
         .french, .hindi, .indonesian, .italian, .korean, .polish, .portuguese,
         .russian, .spanish, .thai, .turkish, .ukrainian, .vietnamese
     ]
+}
+
+/// Languages the user added by connecting a dictionary file in a language
+/// the app doesn't list (see ConnectLocalDictionaryView). They behave like
+/// built-in languages everywhere a language is picked or toggled, except
+/// that speech/vision/on-device-model support is whatever the OS offers for
+/// an unrecognized locale — i.e. none.
+enum CustomLanguageStore {
+    static let prefix = "custom:"
+    private static let defaultsKey = "customLanguagesJSON"
+
+    private struct Record: Codable {
+        let rawValue: String
+        let name: String
+    }
+
+    private static func records() -> [Record] {
+        guard
+            let data = UserDefaults.standard.data(forKey: defaultsKey),
+            let records = try? JSONDecoder().decode([Record].self, from: data)
+        else { return [] }
+        return records
+    }
+
+    static func load() -> [SupportedLanguage] {
+        records().map { SupportedLanguage(customRawValue: $0.rawValue) }
+    }
+
+    static func name(forRawValue rawValue: String) -> String? {
+        records().first(where: { $0.rawValue == rawValue })?.name
+    }
+
+    /// Returns the language for `name`, reusing a built-in or an already
+    /// registered custom language with the same (case-insensitive) name
+    /// rather than creating a duplicate.
+    static func register(name: String) -> SupportedLanguage {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let existing = SupportedLanguage.allCases.first(where: { $0.displayName.caseInsensitiveCompare(trimmed) == .orderedSame }) {
+            return existing
+        }
+        let slug = trimmed.lowercased().filter { $0.isLetter || $0.isNumber }
+        let rawValue = prefix + (slug.isEmpty ? UUID().uuidString : slug)
+        var all = records()
+        all.append(Record(rawValue: rawValue, name: trimmed))
+        if let data = try? JSONEncoder().encode(all) {
+            UserDefaults.standard.set(data, forKey: defaultsKey)
+        }
+        return SupportedLanguage(customRawValue: rawValue)
+    }
+}
+
+private extension SupportedLanguage {
+    init(customRawValue: String) {
+        self.rawValue = customRawValue
+    }
 }

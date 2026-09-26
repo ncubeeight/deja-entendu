@@ -27,9 +27,14 @@ enum GlossaryStore {
     /// Case-insensitive exact match on term, preferring one tagged with the
     /// given language when there's ambiguity (the same spelled word could
     /// exist in more than one language's glossary). Falls back to any
-    /// language match if the term's language isn't known.
+    /// language match if the term's language isn't known. Terms from a
+    /// connected dictionary only count while that dictionary's language is
+    /// toggled on in Settings' "Languages shown on import" — that toggle is
+    /// how a connected dictionary is turned off and on without
+    /// disconnecting it. Hand-typed terms always apply.
     static func definition(forTerm term: String, language: SupportedLanguage?) -> String? {
-        let entries = load()
+        let enabled = AppSettings.languages(from: UserDefaults.standard.string(forKey: AppSettings.enabledLanguagesKey) ?? "")
+        let entries = load().filter { $0.source == .manual || enabled.contains($0.language) }
         let matches = entries.filter { $0.term.caseInsensitiveCompare(term) == .orderedSame }
         if let language, let exact = matches.first(where: { $0.language == language }) {
             return exact.definition

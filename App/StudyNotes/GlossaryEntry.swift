@@ -13,18 +13,24 @@ struct GlossaryEntry: Identifiable, Codable, Hashable {
     let language: SupportedLanguage
     let addedAt: Date
     var source: GlossarySource = .manual
+    /// Which ConnectedDictionary contributed this term; nil for hand-typed
+    /// terms. Entries saved before multiple dictionaries could be connected
+    /// have no ID and are stamped with the one dictionary that existed then
+    /// (see ConnectedDictionaryStore.load()).
+    var dictionaryID: UUID?
 
     enum CodingKeys: String, CodingKey {
-        case id, term, definition, language, addedAt, source
+        case id, term, definition, language, addedAt, source, dictionaryID
     }
 
-    init(id: UUID, term: String, definition: String, language: SupportedLanguage, addedAt: Date, source: GlossarySource = .manual) {
+    init(id: UUID, term: String, definition: String, language: SupportedLanguage, addedAt: Date, source: GlossarySource = .manual, dictionaryID: UUID? = nil) {
         self.id = id
         self.term = term
         self.definition = definition
         self.language = language
         self.addedAt = addedAt
         self.source = source
+        self.dictionaryID = dictionaryID
     }
 
     /// Custom-decoded so glossary.json files saved before `source` existed
@@ -38,6 +44,7 @@ struct GlossaryEntry: Identifiable, Codable, Hashable {
         language = try container.decode(SupportedLanguage.self, forKey: .language)
         addedAt = try container.decode(Date.self, forKey: .addedAt)
         source = try container.decodeIfPresent(GlossarySource.self, forKey: .source) ?? .manual
+        dictionaryID = try container.decodeIfPresent(UUID.self, forKey: .dictionaryID)
     }
 }
 

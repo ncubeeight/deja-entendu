@@ -9,7 +9,7 @@ struct VocabularyFlashcardView: View {
     let entry: VocabularyEntry
 
     @State private var status: Status
-    @State private var speechSynthesizer = AVSpeechSynthesizer()
+    @State private var speaker = TextSpeaker()
     @State private var isDictionarySheetPresented = false
 
     private enum Status {
@@ -44,7 +44,7 @@ struct VocabularyFlashcardView: View {
                             .font(.system(size: 40, weight: .bold))
 
                         Button {
-                            speak(entry.text)
+                            speaker.speak(entry.text, language: entry.language)
                         } label: {
                             Image(systemName: "speaker.wave.2.fill")
                                 .font(.title2)
@@ -145,7 +145,7 @@ struct VocabularyFlashcardView: View {
                 HStack(spacing: 8) {
                     Text("Example").font(.caption).foregroundStyle(.secondary)
                     Button {
-                        speak(details.exampleSentence)
+                        speaker.speak(details.exampleSentence, language: entry.language)
                     } label: {
                         Image(systemName: "speaker.wave.2.fill")
                             .font(.caption)
@@ -182,36 +182,12 @@ struct VocabularyFlashcardView: View {
         return attributed
     }
 
-    /// Only meaningful when the entry's language is known — without it we'd
-    /// fall back to the system's default voice, which is available but not
-    /// reliably correct, so that case is treated as "available" rather than
-    /// blocked. When the language IS known, Apple's speech-synthesis voice
-    /// catalog doesn't cover every language this app supports (e.g. no
-    /// Gujarati voice exists as of this SDK) — checked directly rather than
-    /// assumed, since AVSpeechSynthesisVoice(language:) already returns nil
-    /// gracefully for an unsupported locale instead of crashing.
     private var isVoiceAvailable: Bool {
-        guard let language = entry.language else { return true }
-        return AVSpeechSynthesisVoice(language: language.locale.identifier) != nil
+        TextSpeaker.isVoiceAvailable(for: entry.language)
     }
 
     private var customDefinition: String? {
         GlossaryStore.definition(forTerm: entry.text, language: entry.language)
-    }
-
-    private func speak(_ text: String) {
-        // The app never otherwise configures an audio session, so without
-        // this the default session category honors the hardware Silent/Ring
-        // switch — the speaker button would appear to do nothing on a
-        // muted device even though synthesis itself succeeded.
-        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-        try? AVAudioSession.sharedInstance().setActive(true)
-
-        let utterance = AVSpeechUtterance(string: text)
-        if let language = entry.language {
-            utterance.voice = AVSpeechSynthesisVoice(language: language.locale.identifier)
-        }
-        speechSynthesizer.speak(utterance)
     }
 
     private func generate() async {

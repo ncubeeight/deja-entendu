@@ -7,7 +7,7 @@ struct SettingsView: View {
     @State private var languageSearchText = ""
     @State private var dictionaryPackInterstitialLanguage: SupportedLanguage?
     @State private var isConnectDictionaryPresented = false
-    @State private var connectedDictionary: ConnectedDictionary? = ConnectedDictionaryStore.load()
+    @State private var connectedDictionaries: [ConnectedDictionary] = ConnectedDictionaryStore.load()
 
     private var enabledLanguages: Set<SupportedLanguage> {
         AppSettings.languages(from: enabledLanguagesRaw)
@@ -41,13 +41,14 @@ struct SettingsView: View {
                 Button {
                     isConnectDictionaryPresented = true
                 } label: {
-                    if let connectedDictionary {
+                    if !connectedDictionaries.isEmpty {
                         Label {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("Connect Local Dictionary")
-                                Text("\(connectedDictionary.fileName) · \(connectedDictionary.language.displayName)")
+                                Text(connectedDictionaries.map(\.language.displayName).joined(separator: ", "))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
+                                    .lineLimit(1)
                             }
                         } icon: {
                             Image(systemName: "checkmark.circle.fill")
@@ -68,7 +69,7 @@ struct SettingsView: View {
                 } else {
                     ForEach(filteredLanguages, id: \.self) { language in
                         Toggle(isOn: binding(for: language)) {
-                            if connectedDictionary?.language == language {
+                            if connectedDictionaries.contains(where: { $0.language == language }) {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(language.displayName)
                                     Text("Connected dictionary")
@@ -84,7 +85,7 @@ struct SettingsView: View {
             } header: {
                 Text("Languages shown on import")
             } footer: {
-                Text("Turn off languages you don't use to simplify the picker. At least one must stay on.")
+                Text("Turn off languages you don't use to simplify the picker. At least one must stay on. A language added by connecting a dictionary appears here too — turning it off hides it from the picker and pauses that dictionary's definitions without disconnecting it.")
             }
 
             DictionaryLanguagePacksSection()
@@ -98,8 +99,11 @@ struct SettingsView: View {
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $languageSearchText, prompt: "Search Languages")
+        .onAppear {
+            connectedDictionaries = ConnectedDictionaryStore.load()
+        }
         .sheet(isPresented: $isConnectDictionaryPresented, onDismiss: {
-            connectedDictionary = ConnectedDictionaryStore.load()
+            connectedDictionaries = ConnectedDictionaryStore.load()
         }) {
             ConnectLocalDictionaryView()
         }
