@@ -11,6 +11,9 @@ struct VocabularyFlashcardView: View {
     @State private var status: Status
     @State private var speaker = TextSpeaker()
     @State private var isDictionarySheetPresented = false
+    /// Looked up once per card in .task rather than computed in body —
+    /// see GlossaryStore.definition(forTerm:language:).
+    @State private var customDefinition: String?
 
     private enum Status {
         case loading
@@ -123,6 +126,15 @@ struct VocabularyFlashcardView: View {
                 .ignoresSafeArea()
         }
         .task {
+            // Separate from the generation task so the first lookup after
+            // launch (which builds the glossary index) doesn't hold it up.
+            let term = entry.text
+            let language = entry.language
+            customDefinition = await Task.detached(priority: .userInitiated) {
+                GlossaryStore.definition(forTerm: term, language: language)
+            }.value
+        }
+        .task {
             guard !entry.hasFlashcardDetails else { return }
             await generate()
         }
@@ -184,10 +196,6 @@ struct VocabularyFlashcardView: View {
 
     private var isVoiceAvailable: Bool {
         TextSpeaker.isVoiceAvailable(for: entry.language)
-    }
-
-    private var customDefinition: String? {
-        GlossaryStore.definition(forTerm: entry.text, language: entry.language)
     }
 
     private func generate() async {
