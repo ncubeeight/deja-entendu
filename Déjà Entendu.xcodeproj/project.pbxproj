@@ -51,6 +51,7 @@
 		E83036AEB3873C15437896BC /* AudioTranscoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4436C189F27EDA7AD4F93AFB /* AudioTranscoder.swift */; };
 		F2D815283F6F7F074E9FFA0D /* CustomGlossaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9912378565F63C92DFED79EA /* CustomGlossaryView.swift */; };
 		F34AFA51D4F52C7CDF03332E /* DictionaryLanguagePacksSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA365B9E638FDEB02117E973 /* DictionaryLanguagePacksSection.swift */; };
+		A1B2C3D4E5F6071829304A5B /* SpeechPaceMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5061728394A5B6C /* SpeechPaceMenu.swift */; };
 		EE0437EB12FCD12AC1350ED7 /* TextSpeaker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC466718D28751CD7AEC931A /* TextSpeaker.swift */; };
 		F5144C6225E892056450FCD4 /* ImageIngestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DE32ACD2CF7A4D7EE87328 /* ImageIngestion.swift */; };
 		F6CAFEF06BA6318E3BC9C464 /* WordGlossGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36497FF3E478215B6B0196F9 /* WordGlossGenerator.swift */; };
@@ -127,6 +128,7 @@
 		DEBD979638F7AC9B972B5E15 /* Déjà Entendu.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; name = "Déjà Entendu.app"; path = "Déjà Entendu.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E81A7526DFA047699A0A2804 /* VocabularyFlashcardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabularyFlashcardView.swift; sourceTree = "<group>"; };
 		EA365B9E638FDEB02117E973 /* DictionaryLanguagePacksSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryLanguagePacksSection.swift; sourceTree = "<group>"; };
+		B1C2D3E4F5061728394A5B6C /* SpeechPaceMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechPaceMenu.swift; sourceTree = "<group>"; };
 		FC466718D28751CD7AEC931A /* TextSpeaker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextSpeaker.swift; sourceTree = "<group>"; };
 		ECDB69FA06163AB2AFC77BFE /* AddToDejaEntendu.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AddToDejaEntendu.entitlements; sourceTree = "<group>"; };
 		ED8B6E871C12B6F530C01D7B /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
@@ -188,6 +190,7 @@
 				5B5932862BBCA2002043D148 /* DejaEntendu.entitlements */,
 				3B99D0191D8A4292C6A7D00F /* DejaEntenduApp.swift */,
 				EA365B9E638FDEB02117E973 /* DictionaryLanguagePacksSection.swift */,
+				B1C2D3E4F5061728394A5B6C /* SpeechPaceMenu.swift */,
 				FC466718D28751CD7AEC931A /* TextSpeaker.swift */,
 				98E767063B7F412349B1C30D /* HomeSummaryView.swift */,
 				ED8B6E871C12B6F530C01D7B /* HomeView.swift */,
@@ -383,6 +386,7 @@
 				F2D815283F6F7F074E9FFA0D /* CustomGlossaryView.swift in Sources */,
 				8BF0D6D13DE6DE67344DBB05 /* DejaEntenduApp.swift in Sources */,
 				F34AFA51D4F52C7CDF03332E /* DictionaryLanguagePacksSection.swift in Sources */,
+				A1B2C3D4E5F6071829304A5B /* SpeechPaceMenu.swift in Sources */,
 				EE0437EB12FCD12AC1350ED7 /* TextSpeaker.swift in Sources */,
 				CC89ABD3012341C29FFCEEC8 /* FlashcardGenerator.swift in Sources */,
 				A35CB35F9875D5B0AF32C314 /* FlowLayout.swift in Sources */,
