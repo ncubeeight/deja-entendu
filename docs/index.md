@@ -4,9 +4,9 @@ layout: default
 
 # Déjà Entendu
 
-Have you been studying a language different from your mother tongue? You may have experienced the frustration of trying to remember an idiom you've overheard in the past, from a conversation or a lesson. That's what Déjà Entendu is for. It lets you highlight and review unfamiliar terms in your Voice Memos for future study.
+Have you been studying a language different from your mother tongue? You may have experienced the frustration of trying to remember an idiom you've overheard in the past, from a conversation or a lesson. That's what Déjà Entendu is for. It lets you highlight and review unfamiliar terms from your own recordings, notes and images for future study.
 
-Déjà Entendu (meaning "already heard" in French) lets iOS, iPadOS, and macOS users dive deeper into their Voice Memos on their own device, to study unfamiliar vocabulary in their existing private recordings.
+Déjà Entendu (meaning "already heard" in French) lets iOS, iPadOS, and macOS users translate, transcribe and create flashcards from images, recordings or sound samples on their own device. (Voice Memos files aren’t accessible to other apps by Apple design, so save any recordings you want to study to the Files app first.)
 
 ## Private by design
 
