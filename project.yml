@@ -65,7 +65,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ncubeeight.dejaentendu
         MARKETING_VERSION: "1.1"
-        CURRENT_PROJECT_VERSION: "44"
+        CURRENT_PROJECT_VERSION: "45"
         TARGETED_DEVICE_FAMILY: "1,2"
         SUPPORTS_MACCATALYST: YES
         DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER: NO
@@ -104,7 +104,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ncubeeight.dejaentendu.share
         MARKETING_VERSION: "1.1"
-        CURRENT_PROJECT_VERSION: "44"
+        CURRENT_PROJECT_VERSION: "45"
         SKIP_INSTALL: "YES"
         TARGETED_DEVICE_FAMILY: "1,2"
         SUPPORTS_MACCATALYST: YES
