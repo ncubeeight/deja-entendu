@@ -4,7 +4,9 @@ import FoundationModels
 struct SettingsView: View {
     @AppStorage(AppSettings.enabledLanguagesKey) private var enabledLanguagesRaw: String = ""
     @AppStorage(AppSettings.colorSchemeKey) private var colorSchemeRaw: String = AppColorScheme.system.rawValue
+    @AppStorage(AppSettings.speechPaceKey) private var speechPaceRaw: String = SpeechPace.normal.rawValue
     @State private var languageSearchText = ""
+    @State private var previewSpeaker = TextSpeaker()
     @State private var dictionaryPackInterstitialLanguage: SupportedLanguage?
     @State private var isConnectDictionaryPresented = false
     @State private var connectedDictionaries: [ConnectedDictionary] = ConnectedDictionaryStore.load()
@@ -29,6 +31,25 @@ struct SettingsView: View {
                 }
             } header: {
                 Text("Appearance")
+            }
+
+            Section {
+                Picker("Speech Speed", selection: $speechPaceRaw) {
+                    ForEach(SpeechPace.allCases, id: \.self) { pace in
+                        Text(pace.displayName).tag(pace.rawValue)
+                    }
+                }
+                .pickerStyle(.segmented)
+
+                Button {
+                    previewSpeaker.speak("This is how fast words will be read aloud.", language: .english)
+                } label: {
+                    Label("Preview", systemImage: "speaker.wave.2.fill")
+                }
+            } header: {
+                Text("Speech Speed")
+            } footer: {
+                Text("Applies everywhere text is read aloud — Samples transcripts, word pronunciations, and Vocabulary flashcards. You can also change it from the speed icon next to any speak button.")
             }
 
             Section {
@@ -102,6 +123,7 @@ struct SettingsView: View {
         .onAppear {
             connectedDictionaries = ConnectedDictionaryStore.load()
         }
+        .onDisappear { previewSpeaker.stop() }
         .sheet(isPresented: $isConnectDictionaryPresented, onDismiss: {
             connectedDictionaries = ConnectedDictionaryStore.load()
         }) {

@@ -107,6 +107,9 @@ struct TranscriptionRunnerView: View {
                 }
                 .disabled(!TextSpeaker.isVoiceAvailable(for: input.language))
                 .accessibilityLabel(speaker.isSpeaking ? "Stop speaking" : "Speak transcript")
+
+                SpeechPaceMenu(font: .body)
+                    .disabled(!TextSpeaker.isVoiceAvailable(for: input.language))
             }
             if !TextSpeaker.isVoiceAvailable(for: input.language) {
                 Text("Spoken audio isn't available for \(input.language.displayName) on this device.")
@@ -253,19 +256,23 @@ private struct TranscriptWordToken: View {
             }
 
             if TextSpeaker.isVoiceAvailable(for: language) {
-                Button {
-                    if speaker.isSpeaking {
-                        speaker.stop()
-                    } else {
-                        speaker.speak(word, language: language)
+                HStack(spacing: 10) {
+                    Button {
+                        if speaker.isSpeaking {
+                            speaker.stop()
+                        } else {
+                            speaker.speak(word, language: language)
+                        }
+                    } label: {
+                        Label(
+                            speaker.isSpeaking ? "Stop" : "Pronounce This",
+                            systemImage: speaker.isSpeaking ? "stop.circle.fill" : "speaker.wave.2.fill"
+                        )
                     }
-                } label: {
-                    Label(
-                        speaker.isSpeaking ? "Stop" : "Pronounce This",
-                        systemImage: speaker.isSpeaking ? "stop.circle.fill" : "speaker.wave.2.fill"
-                    )
+                    .buttonStyle(.bordered)
+
+                    SpeechPaceMenu(font: .body)
                 }
-                .buttonStyle(.bordered)
             }
 
             if let addedEntry {

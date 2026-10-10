@@ -53,6 +53,9 @@ struct VocabularyFlashcardView: View {
                                 .font(.title2)
                         }
                         .disabled(!isVoiceAvailable)
+
+                        SpeechPaceMenu(font: .title3)
+                            .disabled(!isVoiceAvailable)
                     }
 
                     if !isVoiceAvailable {
@@ -163,6 +166,9 @@ struct VocabularyFlashcardView: View {
                             .font(.caption)
                     }
                     .disabled(!isVoiceAvailable)
+
+                    SpeechPaceMenu(font: .caption)
+                        .disabled(!isVoiceAvailable)
                 }
                 Text(highlighted(details.exampleSentence, term: entry.text))
                     .font(.body)

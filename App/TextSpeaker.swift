@@ -41,6 +41,7 @@ final class TextSpeaker: NSObject, AVSpeechSynthesizerDelegate {
         if let language {
             utterance.voice = AVSpeechSynthesisVoice(language: language.locale.identifier)
         }
+        utterance.rate = SpeechPace.current.utteranceRate
         isSpeaking = true
         synthesizer.speak(utterance)
     }
