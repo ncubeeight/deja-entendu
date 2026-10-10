@@ -14,7 +14,7 @@ It is not a cloud service. Any use of the on-device, Apple-bundled language mode
 
 ## Languages
 
-Initially we intend to target Chinese, Japanese, German, and French. Other languages are likely to follow in subsequent releases.
+Déjà Entendu supports over 40 languages from around the world for recognizing and translating text. Turn on the ones you’re studying in the Settings tab.
 
 Happy learning!
 
