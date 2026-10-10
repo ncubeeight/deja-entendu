@@ -57,9 +57,7 @@ struct ImageImportView: View {
                 }
             }
             .onAppear {
-                if !enabledLanguages.contains(language) {
-                    language = enabledLanguages.first ?? .chineseTraditional
-                }
+                language = AppSettings.preferredDefaultLanguage(enabledLanguages: enabledLanguages)
             }
             .onChange(of: pickerItem) { _, newValue in
                 guard let newValue else { return }

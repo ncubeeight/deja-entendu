@@ -4,7 +4,7 @@ import PDFKit
 
 /// Registered directly as NSExtensionPrincipalClass in Info.plist — no
 /// storyboard required. iOS instantiates this when the user picks this
-/// extension from a Share Sheet. Handles three distinct cases:
+/// extension from a Share Sheet. Handles four distinct cases:
 ///   - An audio/video file (e.g. Share on a recording in Voice Memos)
 ///     imports it as a new recording to transcribe.
 ///   - Plain text (e.g. Share on a translation in Translate, or a
@@ -14,6 +14,12 @@ import PDFKit
 ///     real text layer — a scanned/image-only PDF has nothing for PDFKit
 ///     to extract and falls through to "Couldn't read that", same as any
 ///     other unreadable attachment.
+///   - An image (e.g. Share from Photos, a screenshot, or a Safari image)
+///     is copied as-is into ImageInbox. OCR deliberately waits for the
+///     main app: Vision needs the text's language up front to read
+///     non-Latin scripts well, and that's only chosen once the app opens.
+///     It also keeps full-resolution decoding out of this extension's
+///     tight memory limit.
 final class ShareViewController: UIViewController {
 
     // Must exactly match the App Group ID in SharedContainer.swift.
@@ -58,6 +64,7 @@ final class ShareViewController: UIViewController {
         case audioAdded
         case vocabularyAdded
         case textSampleAdded
+        case imageAdded
         case failed
 
         var message: String {
@@ -65,6 +72,7 @@ final class ShareViewController: UIViewController {
             case .audioAdded: return "Added to Déjà Entendu ✓"
             case .vocabularyAdded: return "Added to Vocabulary ✓"
             case .textSampleAdded: return "Added to Déjà Entendu ✓"
+            case .imageAdded: return "Added to Déjà Entendu ✓"
             case .failed: return "Couldn't read that"
             }
         }
@@ -94,6 +102,14 @@ final class ShareViewController: UIViewController {
                let text = extractText(fromPDFAt: fileURL),
                !text.isEmpty {
                 return saveTextSample(text) ? .textSampleAdded : .failed
+            }
+        }
+
+        // Images before audio/movie: a Live Photo can advertise a movie
+        // representation too, and the still is what the user meant to share.
+        for provider in attachments where provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
+            if let fileURL = await loadImageFileURL(from: provider) {
+                return saveToSharedInbox(fileURL, folder: "ImageInbox", fallbackExtension: "jpg") ? .imageAdded : .failed
             }
         }
 
@@ -156,16 +172,56 @@ final class ShareViewController: UIViewController {
         }
     }
 
-    private func saveToSharedInbox(_ sourceURL: URL) -> Bool {
+    /// Photos hands back a file URL, but screenshots from the markup
+    /// editor and some third-party apps hand back a UIImage instead, which
+    /// has to be encoded to a file before it can go in the inbox.
+    private func loadImageFileURL(from provider: NSItemProvider) async -> URL? {
+        let imageType = provider.registeredTypeIdentifiers
+            .compactMap { UTType($0) }
+            .first { $0.conforms(to: .image) } ?? .image
+
+        let item: NSSecureCoding? = await withCheckedContinuation { continuation in
+            provider.loadItem(forTypeIdentifier: imageType.identifier, options: nil) { item, _ in
+                continuation.resume(returning: item)
+            }
+        }
+
+        if let url = item as? URL {
+            return url
+        }
+
+        let data: Data?
+        let fileExtension: String
+        if let image = item as? UIImage {
+            data = image.jpegData(compressionQuality: 0.9)
+            fileExtension = "jpg"
+        } else {
+            data = item as? Data
+            fileExtension = imageType.preferredFilenameExtension ?? "jpg"
+        }
+        guard let data else { return nil }
+
+        let tmp = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension(fileExtension)
+        do {
+            try data.write(to: tmp)
+            return tmp
+        } catch {
+            return nil
+        }
+    }
+
+    private func saveToSharedInbox(_ sourceURL: URL, folder: String = "ShareInbox", fallbackExtension: String = "m4a") -> Bool {
         guard let container = FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: appGroupID) else { return false }
 
-        let inbox = container.appendingPathComponent("ShareInbox", isDirectory: true)
+        let inbox = container.appendingPathComponent(folder, isDirectory: true)
         try? FileManager.default.createDirectory(at: inbox, withIntermediateDirectories: true)
 
         let destination = inbox
             .appendingPathComponent(UUID().uuidString)
-            .appendingPathExtension(sourceURL.pathExtension.isEmpty ? "m4a" : sourceURL.pathExtension)
+            .appendingPathExtension(sourceURL.pathExtension.isEmpty ? fallbackExtension : sourceURL.pathExtension)
 
         do {
             try FileManager.default.copyItem(at: sourceURL, to: destination)

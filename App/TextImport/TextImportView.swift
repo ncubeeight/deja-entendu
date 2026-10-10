@@ -53,9 +53,7 @@ struct TextImportView: View {
                 }
             }
             .onAppear {
-                if !enabledLanguages.contains(language) {
-                    language = enabledLanguages.first ?? .chineseTraditional
-                }
+                language = AppSettings.preferredDefaultLanguage(enabledLanguages: enabledLanguages)
             }
             .navigationTitle("Add Text")
             .navigationBarTitleDisplayMode(.inline)

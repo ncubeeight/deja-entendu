@@ -62,7 +62,7 @@ enum SharedContainer {
     }
 
     /// Called on app launch/foreground: lists any whole-document text the
-    /// Share Extension extracted (currently just from a shared PDF), without
+    /// Share Extension extracted from a shared PDF, without
     /// committing it yet — a full passage needs a language chosen up front
     /// the same way an audio import does, so this mirrors pendingFiles()/
     /// commitPendingFiles() rather than drainPendingVocabularyTexts(), which
@@ -78,6 +78,43 @@ enum SharedContainer {
         var results: [ImportedTextSample] = []
         for fileURL in fileURLs {
             if let text = try? String(contentsOf: fileURL, encoding: .utf8),
+               !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                results.append(ImportedTextSample(id: UUID(), body: text, importedAt: .now, language: language))
+            }
+            try? FileManager.default.removeItem(at: fileURL)
+        }
+        return results
+    }
+
+    private static func imageInboxDirectory() -> URL? {
+        guard let container = FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: appGroupID) else {
+            return nil
+        }
+        let inbox = container.appendingPathComponent("ImageInbox", isDirectory: true)
+        try? FileManager.default.createDirectory(at: inbox, withIntermediateDirectories: true)
+        return inbox
+    }
+
+    /// Photos shared from Photos/Safari/screenshots. The extension only
+    /// copies the image here — OCR waits until the app knows the language,
+    /// since Vision needs it up front to read non-Latin scripts well.
+    static func pendingImageFiles() -> [URL] {
+        guard let inbox = imageInboxDirectory() else { return [] }
+        return (try? FileManager.default.contentsOfDirectory(
+            at: inbox, includingPropertiesForKeys: nil
+        )) ?? []
+    }
+
+    /// OCRs each shared photo in `language` and returns the results as
+    /// plain text samples (the photo itself isn't kept), then clears them
+    /// from the inbox. A photo with no recognizable text is dropped rather
+    /// than retried, same as an unreadable shared PDF.
+    static func commitPendingImages(_ fileURLs: [URL], language: SupportedLanguage) -> [ImportedTextSample] {
+        var results: [ImportedTextSample] = []
+        for fileURL in fileURLs {
+            if let data = try? Data(contentsOf: fileURL),
+               let text = try? ImageIngestion.recognizeText(in: data, language: language),
                !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 results.append(ImportedTextSample(id: UUID(), body: text, importedAt: .now, language: language))
             }

@@ -34,6 +34,7 @@ struct TranscriptionRunnerView: View {
 
     @State private var status: Status = .idle
     @State private var flashcardEntry: VocabularyEntry?
+    @State private var speaker = TextSpeaker()
 
     enum Status {
         case idle
@@ -79,6 +80,7 @@ struct TranscriptionRunnerView: View {
             VocabularyFlashcardView(entry: entry)
         }
         .task { await runPipeline() }
+        .onDisappear { speaker.stop() }
     }
 
     private var loadingLabel: String {
@@ -91,7 +93,29 @@ struct TranscriptionRunnerView: View {
     @ViewBuilder
     private func transcriptBlock(result: TranscriptionResult) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Transcript").font(.headline)
+            HStack(spacing: 12) {
+                Text("Transcript").font(.headline)
+                Button {
+                    if speaker.isSpeaking {
+                        speaker.stop()
+                    } else {
+                        speaker.speak(result.fullText, language: input.language)
+                    }
+                } label: {
+                    Image(systemName: speaker.isSpeaking ? "stop.circle.fill" : "speaker.wave.2.fill")
+                        .font(.title3)
+                }
+                .disabled(!TextSpeaker.isVoiceAvailable(for: input.language))
+                .accessibilityLabel(speaker.isSpeaking ? "Stop speaking" : "Speak transcript")
+
+                SpeechPaceMenu(font: .body)
+                    .disabled(!TextSpeaker.isVoiceAvailable(for: input.language))
+            }
+            if !TextSpeaker.isVoiceAvailable(for: input.language) {
+                Text("Spoken audio isn't available for \(input.language.displayName) on this device.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
             Text("Tap a word to add it to your Vocabulary list.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -172,6 +196,7 @@ private struct TranscriptWordToken: View {
     @State private var isSelected = false
     @State private var addedEntry: VocabularyEntry?
     @State private var glossState: GlossState = .loading
+    @State private var speaker = TextSpeaker()
 
     private enum GlossState {
         case loading
@@ -202,7 +227,10 @@ private struct TranscriptWordToken: View {
             .popover(isPresented: $isSelected, arrowEdge: .top) {
                 popoverContent
                     .presentationCompactAdaptation(.popover)
-                    .onDisappear { addedEntry = nil }
+                    .onDisappear {
+                        addedEntry = nil
+                        speaker.stop()
+                    }
                     .task {
                         guard case .loading = glossState else { return }
                         await loadGloss()
@@ -225,6 +253,26 @@ private struct TranscriptWordToken: View {
                     .foregroundStyle(.secondary)
             case .failed:
                 EmptyView()
+            }
+
+            if TextSpeaker.isVoiceAvailable(for: language) {
+                HStack(spacing: 10) {
+                    Button {
+                        if speaker.isSpeaking {
+                            speaker.stop()
+                        } else {
+                            speaker.speak(word, language: language)
+                        }
+                    } label: {
+                        Label(
+                            speaker.isSpeaking ? "Stop" : "Pronounce This",
+                            systemImage: speaker.isSpeaking ? "stop.circle.fill" : "speaker.wave.2.fill"
+                        )
+                    }
+                    .buttonStyle(.bordered)
+
+                    SpeechPaceMenu(font: .body)
+                }
             }
 
             if let addedEntry {

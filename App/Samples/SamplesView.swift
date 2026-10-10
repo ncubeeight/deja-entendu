@@ -40,6 +40,11 @@ struct SamplesView: View {
     @State private var isTextSampleLanguageSheetPresented = false
     @State private var pendingTextSampleLanguage: SupportedLanguage = .chineseTraditional
     @State private var pendingSharedTextSampleFiles: [URL] = []
+    // Photos shared into the extension ride the same language sheet — the
+    // picked language is what Vision OCRs them in, so it can't be guessed
+    // earlier — and land as plain text samples alongside PDF text.
+    @State private var pendingSharedImageFiles: [URL] = []
+    @State private var isRecognizingSharedImages = false
 
     @AppStorage(AppSettings.enabledLanguagesKey) private var enabledLanguagesRaw: String = ""
 
@@ -76,17 +81,57 @@ struct SamplesView: View {
         }
     }
 
+    /// Only exposed on the All tab (see `filteredSamples`) — once a filter
+    /// narrows the list to one kind, newest-first is the only order that's
+    /// made sense so far, so sorting stays out of the way there.
+    private enum SampleSort: String, CaseIterable, Identifiable {
+        case dateNewestFirst, dateOldestFirst, language, title
+
+        var id: String { rawValue }
+
+        var label: String {
+            switch self {
+            case .dateNewestFirst: "Date (Newest First)"
+            case .dateOldestFirst: "Date (Oldest First)"
+            case .language: "Language"
+            case .title: "Title"
+            }
+        }
+
+        var icon: String {
+            switch self {
+            case .dateNewestFirst: "arrow.down"
+            case .dateOldestFirst: "arrow.up"
+            case .language: "globe"
+            case .title: "textformat"
+            }
+        }
+
+        func sort(_ samples: [AnySample]) -> [AnySample] {
+            switch self {
+            case .dateNewestFirst:
+                samples.sorted { $0.importedAt > $1.importedAt }
+            case .dateOldestFirst:
+                samples.sorted { $0.importedAt < $1.importedAt }
+            case .language:
+                samples.sorted { $0.language.displayName.localizedCaseInsensitiveCompare($1.language.displayName) == .orderedAscending }
+            case .title:
+                samples.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
+            }
+        }
+    }
+
+    @State private var sortOption: SampleSort = .dateNewestFirst
+
     private var allSamples: [AnySample] {
-        let combined: [AnySample] =
-            audioRecordings.map(AnySample.audio) +
+        audioRecordings.map(AnySample.audio) +
             textSamples.map(AnySample.text) +
             imageSamples.map(AnySample.image)
-        return combined.sorted { $0.importedAt > $1.importedAt }
     }
 
     private var filteredSamples: [AnySample] {
-        guard let kind = filter.kind else { return allSamples }
-        return allSamples.filter { $0.kind == kind }
+        let base = filter.kind.map { kind in allSamples.filter { $0.kind == kind } } ?? allSamples
+        return filter == .all ? sortOption.sort(base) : base.sorted { $0.importedAt > $1.importedAt }
     }
 
     var body: some View {
@@ -124,12 +169,12 @@ struct SamplesView: View {
             .listStyle(.plain)
             .hardTopScrollEdgeOnIOS26()
             .overlay {
-                if isGeneratingSample {
+                if isGeneratingSample || isRecognizingSharedImages {
                     ZStack {
                         Color.black.opacity(0.15).ignoresSafeArea()
                         VStack(spacing: 12) {
                             ProgressView()
-                            Text("Generating sample…")
+                            Text(isGeneratingSample ? "Generating sample…" : "Recognizing text…")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
@@ -143,6 +188,19 @@ struct SamplesView: View {
                 TranscriptionRunnerView(input: sample.runnerInput)
             }
             .toolbar {
+                if filter == .all {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Menu {
+                            Picker("Sort by", selection: $sortOption) {
+                                ForEach(SampleSort.allCases) { option in
+                                    Label(option.label, systemImage: option.icon).tag(option)
+                                }
+                            }
+                        } label: {
+                            Label("Sort", systemImage: "arrow.up.arrow.down")
+                        }
+                    }
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         isAddDialogPresented = true
@@ -217,8 +275,10 @@ struct SamplesView: View {
                 }
 
                 let pendingTextSampleFiles = SharedContainer.pendingTextSampleFiles()
-                if !pendingTextSampleFiles.isEmpty {
+                let pendingImageFiles = SharedContainer.pendingImageFiles()
+                if !pendingTextSampleFiles.isEmpty || !pendingImageFiles.isEmpty {
                     pendingSharedTextSampleFiles = pendingTextSampleFiles
+                    pendingSharedImageFiles = pendingImageFiles
                     presentTextSampleLanguageSheet()
                 }
             }
@@ -237,33 +297,30 @@ struct SamplesView: View {
 
     @ViewBuilder
     private func row(for sample: AnySample) -> some View {
-        HStack {
-            NavigationLink(value: sample) {
-                HStack(spacing: 10) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 9)
-                            .fill(sample.kind.tintSoft)
-                            .frame(width: 32, height: 32)
-                        Image(systemName: sample.kind.icon)
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(sample.kind.tint)
-                    }
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(sample.title).font(.headline)
-                        Text(sample.subtitle)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
+        NavigationLink(value: sample) {
+            HStack(spacing: 10) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 9)
+                        .fill(sample.kind.tintSoft)
+                        .frame(width: 32, height: 32)
+                    Image(systemName: sample.kind.icon)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(sample.kind.tint)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(sample.title).font(.headline)
+                    Text(sample.subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
-            Spacer()
-            Button {
+        }
+        .swipeActions(edge: .trailing) {
+            Button(role: .destructive) {
                 delete(sample)
             } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .foregroundStyle(.secondary)
+                Label("Delete", systemImage: "trash")
             }
-            .buttonStyle(.plain)
         }
     }
 
@@ -332,9 +389,7 @@ struct SamplesView: View {
     }
 
     private func presentLanguageSheet() {
-        if !enabledLanguages.contains(pendingLanguage) {
-            pendingLanguage = enabledLanguages.first ?? .chineseTraditional
-        }
+        pendingLanguage = AppSettings.preferredDefaultLanguage(enabledLanguages: enabledLanguages)
         isLanguageSheetPresented = true
     }
 
@@ -373,9 +428,7 @@ struct SamplesView: View {
     }
 
     private func presentGenerateLanguageSheet() {
-        if !enabledLanguages.contains(pendingGenerateLanguage) {
-            pendingGenerateLanguage = enabledLanguages.first ?? .chineseTraditional
-        }
+        pendingGenerateLanguage = AppSettings.preferredDefaultLanguage(enabledLanguages: enabledLanguages)
         isGenerateLanguageSheetPresented = true
     }
 
@@ -423,9 +476,13 @@ struct SamplesView: View {
                     }
                     .pickerStyle(.inline)
                 } header: {
-                    Text("What language is this document in?")
+                    Text(pendingSharedImageFiles.isEmpty
+                         ? "What language is this document in?"
+                         : "What language is the text in?")
                 } footer: {
-                    Text("Text extracted from a shared PDF — picking the right language means it's tagged correctly from the start.")
+                    Text(pendingSharedImageFiles.isEmpty
+                         ? "Text extracted from a shared PDF — picking the right language means it's tagged correctly from the start."
+                         : "Text in a shared photo is read in the language you pick, so choosing the right one matters most for non-Latin scripts.")
                 }
             }
             .navigationTitle("Choose Language")
@@ -435,6 +492,7 @@ struct SamplesView: View {
                     Button("Cancel") {
                         isTextSampleLanguageSheetPresented = false
                         pendingSharedTextSampleFiles = []
+                        pendingSharedImageFiles = []
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
@@ -446,6 +504,7 @@ struct SamplesView: View {
                         textSamples = added + textSamples
                         ImportedTextSampleStore.save(textSamples)
                         pendingSharedTextSampleFiles = []
+                        commitSharedImages(language: pendingTextSampleLanguage)
                     }
                 }
             }
@@ -453,17 +512,36 @@ struct SamplesView: View {
         .presentationDetents([.medium])
     }
 
-    private func presentTextSampleLanguageSheet() {
-        if !enabledLanguages.contains(pendingTextSampleLanguage) {
-            pendingTextSampleLanguage = enabledLanguages.first ?? .chineseTraditional
+    /// OCR is slow enough on a full-resolution photo to hitch the UI, so it
+    /// runs off the main actor behind the "Recognizing text…" overlay.
+    private func commitSharedImages(language: SupportedLanguage) {
+        let files = pendingSharedImageFiles
+        pendingSharedImageFiles = []
+        guard !files.isEmpty else { return }
+
+        isRecognizingSharedImages = true
+        Task {
+            let added = await Task.detached(priority: .userInitiated) {
+                SharedContainer.commitPendingImages(files, language: language)
+            }.value
+            textSamples = added + textSamples
+            ImportedTextSampleStore.save(textSamples)
+            isRecognizingSharedImages = false
+            if added.count < files.count {
+                importError = files.count == 1
+                    ? "No text was found in that photo."
+                    : "No text was found in \(files.count - added.count) of the shared photos."
+            }
         }
+    }
+
+    private func presentTextSampleLanguageSheet() {
+        pendingTextSampleLanguage = AppSettings.preferredDefaultLanguage(enabledLanguages: enabledLanguages)
         isTextSampleLanguageSheetPresented = true
     }
 
     private func presentRecordLanguageSheet() {
-        if !enabledLanguages.contains(pendingRecordLanguage) {
-            pendingRecordLanguage = enabledLanguages.first ?? .chineseTraditional
-        }
+        pendingRecordLanguage = AppSettings.preferredDefaultLanguage(enabledLanguages: enabledLanguages)
         isRecordLanguageSheetPresented = true
     }
 

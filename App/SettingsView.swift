@@ -1,9 +1,15 @@
 import SwiftUI
+import FoundationModels
 
 struct SettingsView: View {
     @AppStorage(AppSettings.enabledLanguagesKey) private var enabledLanguagesRaw: String = ""
     @AppStorage(AppSettings.colorSchemeKey) private var colorSchemeRaw: String = AppColorScheme.system.rawValue
+    @AppStorage(AppSettings.speechPaceKey) private var speechPaceRaw: String = SpeechPace.normal.rawValue
     @State private var languageSearchText = ""
+    @State private var previewSpeaker = TextSpeaker()
+    @State private var dictionaryPackInterstitialLanguage: SupportedLanguage?
+    @State private var isConnectDictionaryPresented = false
+    @State private var connectedDictionaries: [ConnectedDictionary] = ConnectedDictionaryStore.load()
 
     private var enabledLanguages: Set<SupportedLanguage> {
         AppSettings.languages(from: enabledLanguagesRaw)
@@ -28,13 +34,53 @@ struct SettingsView: View {
             }
 
             Section {
+                Picker("Speech Speed", selection: $speechPaceRaw) {
+                    ForEach(SpeechPace.allCases, id: \.self) { pace in
+                        Text(pace.displayName).tag(pace.rawValue)
+                    }
+                }
+                .pickerStyle(.segmented)
+
+                Button {
+                    previewSpeaker.speak("This is how fast words will be read aloud.", language: .english)
+                } label: {
+                    Label("Preview", systemImage: "speaker.wave.2.fill")
+                }
+            } header: {
+                Text("Speech Speed")
+            } footer: {
+                Text("Applies everywhere text is read aloud — Samples transcripts, word pronunciations, and Vocabulary flashcards. You can also change it from the speed icon next to any speak button.")
+            }
+
+            Section {
                 NavigationLink {
                     CustomGlossaryView()
                 } label: {
                     Label("Custom Glossary", systemImage: "character.book.closed")
                 }
+
+                Button {
+                    isConnectDictionaryPresented = true
+                } label: {
+                    if !connectedDictionaries.isEmpty {
+                        Label {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Connect Local Dictionary")
+                                Text(connectedDictionaries.map(\.language.displayName).joined(separator: ", "))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+                        } icon: {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.green)
+                        }
+                    } else {
+                        Label("Connect Local Dictionary", systemImage: "folder.badge.plus")
+                    }
+                }
             } footer: {
-                Text("Add your own term definitions — useful for specialized vocabulary an on-device model might not know, and still works on devices without one.")
+                Text("Add your own term definitions — useful for specialized vocabulary an on-device model might not know, and still works on devices without one. Connect a dictionary file from Files to bulk-import its terms instead of typing them in one at a time.")
             }
 
             Section {
@@ -43,14 +89,27 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(filteredLanguages, id: \.self) { language in
-                        Toggle(language.displayName, isOn: binding(for: language))
+                        Toggle(isOn: binding(for: language)) {
+                            if connectedDictionaries.contains(where: { $0.language == language }) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(language.displayName)
+                                    Text("Connected dictionary")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            } else {
+                                Text(language.displayName)
+                            }
+                        }
                     }
                 }
             } header: {
                 Text("Languages shown on import")
             } footer: {
-                Text("Turn off languages you don't use to simplify the picker. At least one must stay on.")
+                Text("Turn off languages you don't use to simplify the picker. At least one must stay on. A language added by connecting a dictionary appears here too — turning it off hides it from the picker and pauses that dictionary's definitions without disconnecting it.")
             }
+
+            DictionaryLanguagePacksSection()
 
             Section {
                 Text(versionLabel)
@@ -61,6 +120,26 @@ struct SettingsView: View {
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $languageSearchText, prompt: "Search Languages")
+        .onAppear {
+            connectedDictionaries = ConnectedDictionaryStore.load()
+        }
+        .onDisappear { previewSpeaker.stop() }
+        .sheet(isPresented: $isConnectDictionaryPresented, onDismiss: {
+            connectedDictionaries = ConnectedDictionaryStore.load()
+        }) {
+            ConnectLocalDictionaryView()
+        }
+        .alert(
+            "No On-Device Model",
+            isPresented: Binding(
+                get: { dictionaryPackInterstitialLanguage != nil },
+                set: { if !$0 { dictionaryPackInterstitialLanguage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Please import the language pack for this language when phone has wi-fi coverage.")
+        }
     }
 
     /// "Version 1.0 Build 25" rather than a single dotted "1.0.25" —
@@ -88,6 +167,17 @@ struct SettingsView: View {
                 // would clear the last remaining language.
                 guard !current.isEmpty else { return }
                 enabledLanguagesRaw = AppSettings.rawValue(from: current)
+
+                // On a device that can't run the on-device model at all
+                // (not just "not enabled yet" or "still downloading"),
+                // Samples/Vocabulary definitions for this language will
+                // need Apple's offline dictionary pack instead — point the
+                // user at it rather than let lookups silently fail later.
+                if isOn,
+                   SupportedLanguage.translationDictionaryLanguages.contains(language),
+                   case .unavailable(.deviceNotEligible) = SystemLanguageModel.default.availability {
+                    dictionaryPackInterstitialLanguage = language
+                }
             }
         )
     }
