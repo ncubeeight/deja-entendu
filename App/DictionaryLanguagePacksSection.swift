@@ -27,7 +27,7 @@ struct DictionaryLanguagePacksSection: View {
     @State private var languageAwaitingCellularConfirmation: SupportedLanguage?
 
     private var sortedLanguages: [SupportedLanguage] {
-        SupportedLanguage.translationDictionaryLanguages.sorted { $0.displayName < $1.displayName }
+        SupportedLanguage.translationDictionaryLanguages.sorted { $0.dictionaryPackDisplayName < $1.dictionaryPackDisplayName }
     }
 
     /// Packs are checked/downloaded as this-language-to-device-language
@@ -81,7 +81,7 @@ struct DictionaryLanguagePacksSection: View {
             Button("Cancel", role: .cancel) {}
             Button("Download") { beginDownload(language) }
         } message: { language in
-            Text("Download the \(language.displayName) dictionary pack? Some language packs are quite large.")
+            Text("Download the \(language.dictionaryPackDisplayName) dictionary pack? Some language packs are quite large.")
         }
         // Shown instead of the above when Wi-Fi isn't detected — requires
         // the explicit "Download Anyway" to proceed on cellular.
@@ -107,14 +107,14 @@ struct DictionaryLanguagePacksSection: View {
         ) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text("Couldn't download the \(downloadError?.displayName ?? "") language pack. Check your connection and try again.")
+            Text("Couldn't download the \(downloadError?.dictionaryPackDisplayName ?? "") language pack. Check your connection and try again.")
         }
     }
 
     @ViewBuilder
     private func row(for language: SupportedLanguage) -> some View {
         HStack {
-            Text(language.displayName)
+            Text(language.dictionaryPackDisplayName)
             Spacer()
             if isDeviceOwnLanguage(language) {
                 Text("Default Dictionary")

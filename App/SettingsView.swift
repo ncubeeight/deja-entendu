@@ -174,7 +174,7 @@ struct SettingsView: View {
                 // need Apple's offline dictionary pack instead — point the
                 // user at it rather than let lookups silently fail later.
                 if isOn,
-                   SupportedLanguage.translationDictionaryLanguages.contains(language),
+                   language.hasDictionaryPack,
                    case .unavailable(.deviceNotEligible) = SystemLanguageModel.default.availability {
                     dictionaryPackInterstitialLanguage = language
                 }

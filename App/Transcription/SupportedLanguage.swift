@@ -19,6 +19,7 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
     static let german = SupportedLanguage(builtIn: "german")
     static let french = SupportedLanguage(builtIn: "french")
     static let spanish = SupportedLanguage(builtIn: "spanish")
+    static let spanishLatinAmerica = SupportedLanguage(builtIn: "spanishLatinAmerica")
     static let thai = SupportedLanguage(builtIn: "thai")
     static let korean = SupportedLanguage(builtIn: "korean")
     static let vietnamese = SupportedLanguage(builtIn: "vietnamese")
@@ -63,6 +64,7 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
         .german,
         .french,
         .spanish,
+        .spanishLatinAmerica,
         .thai,
         .korean,
         .vietnamese,
@@ -156,8 +158,16 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
             Locale(identifier: "de-DE")
         case .french:
             Locale(identifier: "fr-FR")
+        // Spain vs Latin America, split the same way as the Chinese and
+        // Cantonese pairs so each drives its own speech voice and
+        // transcription model. Mexico stands in for Latin America: es-419
+        // has no synthesis voice or SpeechTranscriber model of its own,
+        // while es-MX has both and is the region Apple's own Latin
+        // American voices are tagged with.
         case .spanish:
             Locale(identifier: "es-ES")
+        case .spanishLatinAmerica:
+            Locale(identifier: "es-MX")
         case .thai:
             Locale(identifier: "th-TH")
         case .korean:
@@ -255,6 +265,7 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
         case .german: .german
         case .french: .french
         case .spanish: .spanish
+        case .spanishLatinAmerica: .spanish
         case .thai: .thai
         case .korean: .korean
         case .vietnamese: .vietnamese
@@ -302,7 +313,8 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
         case .japanese: "Japanese"
         case .german: "German"
         case .french: "French"
-        case .spanish: "Spanish"
+        case .spanish: "Spanish (Spain)"
+        case .spanishLatinAmerica: "Spanish (Latin America)"
         case .thai: "Thai"
         case .korean: "Korean"
         case .vietnamese: "Vietnamese"
@@ -341,16 +353,32 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
         }
     }
 
+    /// Name for a dictionary pack row. Packs are per base language (both
+    /// Spanish variants share one), so the region qualifier is dropped
+    /// rather than implying the pack is Spain-only.
+    var dictionaryPackDisplayName: String {
+        self == .spanish ? "Spanish" : displayName
+    }
+
     /// The languages Apple's Translate app currently offers as downloadable,
     /// on-device dictionary/translation packs (its Languages tab, iOS 26).
     /// Distinct from the full transcription list above — this is Apple's
     /// smaller, curated set that the Translation framework can actually
-    /// fetch language data for.
+    /// fetch language data for. Spanish is listed once since both variants
+    /// share the same pack — see hasDictionaryPack.
     static let translationDictionaryLanguages: [SupportedLanguage] = [
         .arabic, .chineseSimplified, .chineseTraditional, .dutch, .english,
         .french, .hindi, .indonesian, .italian, .korean, .polish, .portuguese,
         .russian, .spanish, .thai, .turkish, .ukrainian, .vietnamese
     ]
+
+    /// Matched by language code rather than list membership so Latin
+    /// American Spanish counts as covered by the one Spanish pack.
+    var hasDictionaryPack: Bool {
+        Self.translationDictionaryLanguages.contains {
+            $0.locale.language.languageCode == locale.language.languageCode
+        }
+    }
 }
 
 /// Languages the user added by connecting a dictionary file in a language
