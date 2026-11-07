@@ -76,6 +76,14 @@ struct SettingsView: View {
             DictionaryLanguagePacksSection()
 
             Section {
+                NavigationLink {
+                    AcknowledgementsView()
+                } label: {
+                    Label("Acknowledgements", systemImage: "heart.text.square")
+                }
+            }
+
+            Section {
                 Text(versionLabel)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
@@ -110,6 +118,41 @@ struct SettingsView: View {
 #Preview {
     NavigationStack {
         SettingsView()
+    }
+}
+
+// MARK: - Acknowledgements
+
+/// Credits for third-party work the app ships with. NavajoKit's CC BY-SA
+/// 4.0 license requires crediting Daniel Gump with a link to its GitLab
+/// page wherever it's distributed — keep this when adding new entries.
+struct AcknowledgementsView: View {
+    var body: some View {
+        Form {
+            Section {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Navajo (Diné bizaad) word meanings and read-aloud come from NavajoKit by Daniel Gump. Thank you for making Navajo language tools freely available.")
+                    Text("Déjà Entendu builds it from a public fork, navajokit-new, released under the same license.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.vertical, 4)
+
+                Link(destination: URL(string: "https://gitlab.com/HullBreach/navajokit")!) {
+                    Label("NavajoKit on GitLab", systemImage: "link")
+                }
+                Link(destination: URL(string: "https://github.com/ncubeeight/navajokit-new")!) {
+                    Label("navajokit-new on GitHub", systemImage: "link")
+                }
+                Link(destination: URL(string: "https://creativecommons.org/licenses/by-sa/4.0/")!) {
+                    Label("License: CC BY-SA 4.0", systemImage: "doc.text")
+                }
+            } header: {
+                Text("NavajoKit")
+            }
+        }
+        .navigationTitle("Acknowledgements")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

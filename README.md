@@ -7,3 +7,7 @@ As Apple LLM expands to more languages, the basic Déjà Entendu app can also be
 Known issue from testing is that audio parsing does not work well with extensive background noise in the recording. 
 Other developers may build off this app as a fork and use their own branding and features without re-committing to this code base.
 The Development branch is for new features to be tested that may not eventually return to main.
+
+## Acknowledgements
+
+Navajo (Diné bizaad) word meanings and read-aloud use [NavajoKit](https://gitlab.com/HullBreach/navajokit) by Daniel Gump, licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). The app pulls it in as a Swift package from the fork [ncubeeight/navajokit-new](https://github.com/ncubeeight/navajokit-new), which keeps the same license. Forks of Déjà Entendu that include Navajo support need to keep this credit.

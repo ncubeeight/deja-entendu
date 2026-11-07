@@ -18,6 +18,10 @@ Déjà Entendu supports over 40 languages from around the world for recognizing 
 
 Happy learning!
 
+## Acknowledgements
+
+Navajo (Diné bizaad) word meanings and read-aloud in Déjà Entendu come from [NavajoKit](https://gitlab.com/HullBreach/navajokit) by Daniel Gump, licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Déjà Entendu builds it from a public fork, [navajokit-new](https://github.com/ncubeeight/navajokit-new), released under the same license. Thank you, Daniel, for making Navajo language tools freely available.
+
 ## Source
 
 This project's source is in this repository. Built with SwiftUI, `SpeechAnalyzer`, and `FoundationModels`.
