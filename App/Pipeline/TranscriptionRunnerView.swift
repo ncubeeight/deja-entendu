@@ -36,6 +36,16 @@ struct TranscriptionRunnerView: View {
     @State private var flashcardEntry: VocabularyEntry?
     @State private var speaker = TextSpeaker()
 
+    // Text-selection mode. The transcript normally renders as individual
+    // tappable word tokens (tap-to-add-vocabulary), which native text
+    // selection can't span — so a long-press offers "Select" / "Select
+    // All", which swaps the page over to one plain selectable text view
+    // until the user taps Done.
+    @State private var isSelecting = false
+    @State private var selectAllRequest = 0
+    @State private var selectedText = ""
+    @State private var didCopy = false
+
     enum Status {
         case idle
         case transcribing
@@ -48,39 +58,163 @@ struct TranscriptionRunnerView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                switch status {
-                case .idle, .transcribing:
-                    ProgressView(loadingLabel)
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 40)
+                if isSelecting, currentResult != nil {
+                    selectionBlock
+                    if case .transcribed = status {
+                        ProgressView("Generating study notes…")
+                    }
+                } else {
+                    switch status {
+                    case .idle, .transcribing:
+                        ProgressView(loadingLabel)
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, 40)
 
-                case .transcribed(let result):
-                    transcriptBlock(result: result)
-                    ProgressView("Generating study notes…")
+                    case .transcribed(let result):
+                        transcriptBlock(result: result)
+                            .selectionContextMenu(preview: result.fullText, title: input.title, onSelect: enterSelection)
+                        ProgressView("Generating study notes…")
 
-                case .notesReady(let result, let notes):
-                    transcriptBlock(result: result)
-                    studyNotesBlock(notes)
+                    case .notesReady(let result, let notes):
+                        VStack(alignment: .leading, spacing: 16) {
+                            transcriptBlock(result: result)
+                            studyNotesBlock(notes)
+                        }
+                        .selectionContextMenu(preview: result.fullText, title: input.title, onSelect: enterSelection)
 
-                case .notesUnavailable(let result, let reason):
-                    transcriptBlock(result: result)
-                    Text("Study notes unavailable: \(reason)")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                    case .notesUnavailable(let result, let reason):
+                        transcriptBlock(result: result)
+                            .selectionContextMenu(preview: result.fullText, title: input.title, onSelect: enterSelection)
+                        Text("Study notes unavailable: \(reason)")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
 
-                case .failed(let message):
-                    Text(message)
-                        .foregroundStyle(.red)
+                    case .failed(let message):
+                        Text(message)
+                            .foregroundStyle(.red)
+                    }
                 }
             }
             .padding()
         }
         .navigationTitle(input.title)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                // Mail, Messages, Notes, Files, etc. all come from the
+                // system share sheet; subject is what Mail uses as the
+                // subject line.
+                ShareLink(
+                    item: shareText,
+                    subject: Text(input.title),
+                    preview: SharePreview(input.title)
+                ) {
+                    Image(systemName: "square.and.arrow.up")
+                }
+                .disabled(currentResult == nil)
+                .accessibilityLabel("Share Sample")
+            }
+        }
+        .safeAreaInset(edge: .bottom) {
+            if isSelecting {
+                selectionActionBar
+            }
+        }
         .navigationDestination(item: $flashcardEntry) { entry in
             VocabularyFlashcardView(entry: entry)
         }
         .task { await runPipeline() }
         .onDisappear { speaker.stop() }
+    }
+
+    // MARK: - Selection & sharing
+
+    private var currentResult: TranscriptionResult? {
+        switch status {
+        case .transcribed(let result), .notesReady(let result, _), .notesUnavailable(let result, _):
+            result
+        case .idle, .transcribing, .failed:
+            nil
+        }
+    }
+
+    private var currentNotes: StudyNotes? {
+        if case .notesReady(_, let notes) = status { notes } else { nil }
+    }
+
+    /// Transcript / Translation / Key Vocabulary as (heading, body) pairs —
+    /// shared by the selectable view and the exported share text so the
+    /// two always match.
+    private var exportSections: [(heading: String, body: String)] {
+        guard let result = currentResult else { return [] }
+        var sections = [(heading: "Transcript", body: result.fullText)]
+        if let notes = currentNotes {
+            sections.append((heading: "Translation", body: notes.englishTranslation))
+            if !notes.keyVocabulary.isEmpty {
+                sections.append((
+                    heading: "Key Vocabulary",
+                    body: notes.keyVocabulary.map { "• \($0)" }.joined(separator: "\n")
+                ))
+            }
+        }
+        return sections
+    }
+
+    private var shareText: String {
+        let header = "\(input.title)\nLanguage: \(input.language.displayName)"
+        let body = exportSections.map { "\($0.heading)\n\($0.body)" }
+        return ([header] + body).joined(separator: "\n\n")
+    }
+
+    private func enterSelection(selectAll: Bool) {
+        speaker.stop()
+        selectedText = ""
+        // A fresh SelectableTextView starts its coordinator at 0, so
+        // resetting here keeps an old request from re-firing.
+        selectAllRequest = selectAll ? 1 : 0
+        isSelecting = true
+    }
+
+    @ViewBuilder
+    private var selectionBlock: some View {
+        Text("Drag to select text, or long-press a word. Tap Done to go back to tapping words for vocabulary.")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        SelectableTextView(
+            sections: exportSections,
+            selectAllRequest: selectAllRequest,
+            selectedText: $selectedText
+        )
+    }
+
+    private var selectionActionBar: some View {
+        HStack {
+            Button("Done") {
+                isSelecting = false
+                selectedText = ""
+            }
+            .buttonStyle(.bordered)
+
+            Spacer()
+
+            Button("Select All") { selectAllRequest += 1 }
+                .buttonStyle(.bordered)
+
+            Button {
+                UIPasteboard.general.string = selectedText
+                didCopy = true
+                Task {
+                    try? await Task.sleep(for: .seconds(1.5))
+                    didCopy = false
+                }
+            } label: {
+                Label(didCopy ? "Copied" : "Copy", systemImage: didCopy ? "checkmark" : "doc.on.doc")
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(selectedText.isEmpty)
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 10)
+        .background(.bar)
     }
 
     private var loadingLabel: String {
@@ -320,5 +454,132 @@ private struct TranscriptWordToken: View {
         entries.insert(entry, at: 0)
         VocabularyStore.save(entries)
         addedEntry = entry
+    }
+}
+
+// MARK: - Long-press "Select / Select All" menu
+
+private extension View {
+    /// Long-press anywhere on the sample's content offers Select / Select
+    /// All. A small custom preview stands in for the lifted view — the
+    /// default would scale the whole (possibly very long) transcript down
+    /// into the menu. Word-token taps are unaffected.
+    func selectionContextMenu(
+        preview: String,
+        title: String,
+        onSelect: @escaping (_ selectAll: Bool) -> Void
+    ) -> some View {
+        contextMenu {
+            Button {
+                onSelect(false)
+            } label: {
+                Label("Select", systemImage: "selection.pin.in.out")
+            }
+            Button {
+                onSelect(true)
+            } label: {
+                Label("Select All", systemImage: "text.justify.left")
+            }
+        } preview: {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title).font(.headline)
+                Text(preview)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(4)
+            }
+            .padding()
+            .frame(width: 300, alignment: .leading)
+        }
+    }
+}
+
+// MARK: - Selectable text
+
+/// SwiftUI's Text only supports copying a whole Text on iOS, not selecting
+/// part of it, so selection mode uses a non-editable UITextView — which
+/// brings the native selection handles and Copy / Look Up / Translate /
+/// Share edit menu with it.
+private struct SelectableTextView: UIViewRepresentable {
+    let sections: [(heading: String, body: String)]
+    /// Bumped by the parent to request "select everything".
+    let selectAllRequest: Int
+    @Binding var selectedText: String
+
+    func makeCoordinator() -> Coordinator { Coordinator(selectedText: $selectedText) }
+
+    func makeUIView(context: Context) -> UITextView {
+        let textView = UITextView()
+        textView.isEditable = false
+        textView.isSelectable = true
+        textView.isScrollEnabled = false
+        textView.backgroundColor = .clear
+        textView.textContainerInset = .zero
+        textView.textContainer.lineFragmentPadding = 0
+        textView.adjustsFontForContentSizeCategory = true
+        textView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        textView.delegate = context.coordinator
+        return textView
+    }
+
+    func updateUIView(_ textView: UITextView, context: Context) {
+        context.coordinator.selectedText = $selectedText
+        let attributed = Self.attributedText(for: sections)
+        if textView.attributedText != attributed {
+            textView.attributedText = attributed
+        }
+        if selectAllRequest != context.coordinator.lastSelectAllRequest {
+            context.coordinator.lastSelectAllRequest = selectAllRequest
+            // Deferred so the view is in a window and can take focus.
+            DispatchQueue.main.async {
+                textView.becomeFirstResponder()
+                textView.selectedRange = NSRange(location: 0, length: textView.attributedText.length)
+            }
+        }
+    }
+
+    func sizeThatFits(_ proposal: ProposedViewSize, uiView: UITextView, context: Context) -> CGSize? {
+        let width = proposal.width ?? UIScreen.main.bounds.width
+        let fitted = uiView.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude))
+        return CGSize(width: width, height: ceil(fitted.height))
+    }
+
+    private static func attributedText(for sections: [(heading: String, body: String)]) -> NSAttributedString {
+        let result = NSMutableAttributedString()
+        let headingAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.preferredFont(forTextStyle: .headline),
+            .foregroundColor: UIColor.label
+        ]
+        let bodyStyle = NSMutableParagraphStyle()
+        bodyStyle.lineSpacing = 4
+        let bodyAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.preferredFont(forTextStyle: .body),
+            .foregroundColor: UIColor.label,
+            .paragraphStyle: bodyStyle
+        ]
+        for (index, section) in sections.enumerated() {
+            if index > 0 { result.append(NSAttributedString(string: "\n\n", attributes: bodyAttributes)) }
+            result.append(NSAttributedString(string: section.heading + "\n", attributes: headingAttributes))
+            result.append(NSAttributedString(string: section.body, attributes: bodyAttributes))
+        }
+        return result
+    }
+
+    final class Coordinator: NSObject, UITextViewDelegate {
+        var selectedText: Binding<String>
+        var lastSelectAllRequest = 0
+
+        init(selectedText: Binding<String>) {
+            self.selectedText = selectedText
+        }
+
+        func textViewDidChangeSelection(_ textView: UITextView) {
+            let range = textView.selectedRange
+            let text = range.length > 0
+                ? (textView.text as NSString).substring(with: range)
+                : ""
+            // Delegate callbacks can land mid view-update.
+            DispatchQueue.main.async { self.selectedText.wrappedValue = text }
+        }
     }
 }
