@@ -47,7 +47,9 @@ enum NavajoSupport {
 }
 
 /// Loads NavajoKit lazily, off the main thread, once: the lexicon (about
-/// 11,000 words) and models take several seconds to load.
+/// 11,000 words) and tagger take a few seconds to load. NavajoKit's
+/// sentence-translation models live in the separate NavajoKitTransformer
+/// library, which the app doesn't link, so they aren't bundled.
 private actor NavajoEngine {
     static let shared = NavajoEngine()
 
