@@ -153,6 +153,12 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
 
     var isDiscovered: Bool { rawValue.hasPrefix(DiscoveredLanguageStore.prefix) }
 
+    /// True for languages written right to left (Arabic, Hebrew, Persian,
+    /// Urdu, ...), going by the locale's script.
+    var isRightToLeft: Bool {
+        Locale.Language(identifier: locale.identifier(.bcp47)).characterDirection == .rightToLeft
+    }
+
     /// Language code + script, from the maximal identifier — e.g. both
     /// "zh-TW" and "zh-Hant" give "zh-Hant", "fr-FR" gives "fr-Latn". Used
     /// to match a language against what Apple's frameworks report, keeping

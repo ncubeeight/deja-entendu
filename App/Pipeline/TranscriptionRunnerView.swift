@@ -1,4 +1,5 @@
 import SwiftUI
+import NaturalLanguage
 
 /// What TranscriptionRunnerView needs to run the shared transcript →
 /// vocabulary pipeline. Audio needs an actual transcription pass first;
@@ -307,6 +308,8 @@ struct TranscriptionRunnerView: View {
                     Array(TextSegmentation.sentences(in: result.fullText, language: input.language.nlLanguage).enumerated()),
                     id: \.offset
                 ) { _, sentence in
+                    // Mirrored for right-to-left sentences, so the first
+                    // word sits at the right edge and lines wrap leftward.
                     FlowLayout(spacing: 4) {
                         ForEach(
                             Array(TextSegmentation.words(in: sentence, language: input.language.nlLanguage).enumerated()),
@@ -321,9 +324,21 @@ struct TranscriptionRunnerView: View {
                             }
                         }
                     }
+                    .environment(\.layoutDirection, Self.isRightToLeft(sentence, language: input.language) ? .rightToLeft : .leftToRight)
                 }
             }
         }
+    }
+
+    /// Direction for one sentence: from its own script when that's clear
+    /// (so an English line inside an Arabic sample still reads left to
+    /// right), otherwise from the sample's language. Covers custom
+    /// languages too, whose locale says nothing about direction.
+    static func isRightToLeft(_ sentence: String, language: SupportedLanguage) -> Bool {
+        if let detected = NLLanguageRecognizer.dominantLanguage(for: sentence), detected != .undetermined {
+            return Locale.Language(identifier: detected.rawValue).characterDirection == .rightToLeft
+        }
+        return language.isRightToLeft
     }
 
     @ViewBuilder
