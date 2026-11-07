@@ -96,17 +96,12 @@ enum ImageIngestion {
         guard !language.isCustom,
               let supported = try? request.supportedRecognitionLanguages() else { return nil }
 
-        func scriptKey(_ identifier: String) -> String {
-            let maximal = Locale.Language(identifier: Locale.Language(identifier: identifier).maximalIdentifier)
-            return "\(maximal.languageCode?.identifier ?? "")-\(maximal.script?.identifier ?? "")"
-        }
-
         let wanted = language.locale.identifier(.bcp47)
         if let exact = supported.first(where: { $0.caseInsensitiveCompare(wanted) == .orderedSame }) {
             return exact
         }
-        let wantedKey = scriptKey(wanted)
-        return supported.first { scriptKey($0) == wantedKey }
+        let wantedKey = SupportedLanguage.scriptKey(forIdentifier: wanted)
+        return supported.first { SupportedLanguage.scriptKey(forIdentifier: $0) == wantedKey }
     }
 
     private static func imagesDirectory() throws -> URL {

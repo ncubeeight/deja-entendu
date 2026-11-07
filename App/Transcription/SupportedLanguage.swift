@@ -1,9 +1,16 @@
 import Foundation
 import NaturalLanguage
 
-/// Languages the transcription pipeline can detect and transcribe. Adding a
-/// new language means adding a case here — everything else (the picker,
-/// transcription, study notes) reads from this list.
+/// Every language the app can tag a Sample, term or dictionary with. Three
+/// kinds, all read through `allCases`:
+/// - Built-ins (below): hand-tuned locales, tokenizer languages and names.
+/// - Discovered: languages iOS reports support for (speech transcription,
+///   photo text, Translate, on-device model, read-aloud voices) that aren't
+///   built in, found at
+///   launch by LanguageDiscovery and stored in DiscoveredLanguageStore — so
+///   a language Apple adds later shows up without an app update.
+/// - Custom: languages the user added by connecting a dictionary in a
+///   language nothing else lists (CustomLanguageStore), e.g. Navajo.
 struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
     let rawValue: String
 
@@ -106,7 +113,7 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
     /// e.g. Navajo. Read fresh each time so a newly added language shows up
     /// in every picker/Settings list immediately.
     static var allCases: [SupportedLanguage] {
-        builtIns + CustomLanguageStore.load()
+        builtIns + DiscoveredLanguageStore.load() + CustomLanguageStore.load()
     }
 
     /// nil for a raw value that's neither built in nor a registered custom
@@ -114,7 +121,8 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
     init?(rawValue: String) {
         if let builtIn = Self.builtIns.first(where: { $0.rawValue == rawValue }) {
             self = builtIn
-        } else if CustomLanguageStore.name(forRawValue: rawValue) != nil {
+        } else if CustomLanguageStore.name(forRawValue: rawValue) != nil
+                    || DiscoveredLanguageStore.record(forRawValue: rawValue) != nil {
             self.rawValue = rawValue
         } else {
             return nil
@@ -135,6 +143,19 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
     }
 
     var isCustom: Bool { rawValue.hasPrefix(CustomLanguageStore.prefix) }
+
+    var isDiscovered: Bool { rawValue.hasPrefix(DiscoveredLanguageStore.prefix) }
+
+    /// Language code + script, from the maximal identifier — e.g. both
+    /// "zh-TW" and "zh-Hant" give "zh-Hant", "fr-FR" gives "fr-Latn". Used
+    /// to match a language against what Apple's frameworks report, keeping
+    /// Traditional and Simplified Chinese distinct while ignoring region.
+    static func scriptKey(forIdentifier identifier: String) -> String {
+        let maximal = Locale.Language(identifier: Locale.Language(identifier: identifier).maximalIdentifier)
+        return "\(maximal.languageCode?.identifier ?? "")-\(maximal.script?.identifier ?? "")"
+    }
+
+    var scriptKey: String { Self.scriptKey(forIdentifier: locale.identifier(.bcp47)) }
 
     var locale: Locale {
         switch self {
@@ -237,7 +258,7 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
         case .arabic:
             Locale(identifier: "ar-SA")
         default:
-            Locale(identifier: "und")
+            Locale(identifier: DiscoveredLanguageStore.record(forRawValue: rawValue)?.localeIdentifier ?? "und")
         }
     }
 
@@ -300,7 +321,15 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
         case .estonian: .undetermined
         case .polish: .polish
         case .arabic: .arabic
-        default: .undetermined
+        default:
+            // NLLanguage is a raw-string type keyed by language code; for a
+            // discovered language that NaturalLanguage doesn't know, the
+            // tokenizer treats it as undetermined, same as the cases above.
+            if isDiscovered, let code = locale.language.languageCode?.identifier {
+                NLLanguage(rawValue: code)
+            } else {
+                .undetermined
+            }
         }
     }
 
@@ -349,7 +378,10 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
         case .estonian: "Estonian"
         case .polish: "Polish"
         case .arabic: "Arabic"
-        default: CustomLanguageStore.name(forRawValue: rawValue) ?? rawValue
+        default:
+            DiscoveredLanguageStore.record(forRawValue: rawValue)?.name
+                ?? CustomLanguageStore.name(forRawValue: rawValue)
+                ?? rawValue
         }
     }
 
@@ -360,13 +392,19 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
         self == .spanish ? "Spanish" : displayName
     }
 
-    /// The languages Apple's Translate app currently offers as downloadable,
-    /// on-device dictionary/translation packs (its Languages tab, iOS 26).
-    /// Distinct from the full transcription list above — this is Apple's
-    /// smaller, curated set that the Translation framework can actually
-    /// fetch language data for. Spanish is listed once since both variants
-    /// share the same pack — see hasDictionaryPack.
-    static let translationDictionaryLanguages: [SupportedLanguage] = [
+    /// Languages the Translation framework can fetch an on-device pack for,
+    /// as last reported by LanguageAvailability (see LanguageDiscovery).
+    /// Spanish appears once since both variants share the same pack — see
+    /// hasDictionaryPack. Falls back to the list below until the first
+    /// refresh has run.
+    static var translationDictionaryLanguages: [SupportedLanguage] {
+        let reported = DiscoveredLanguageStore.dictionaryPackLanguages()
+        return reported.isEmpty ? fallbackTranslationDictionaryLanguages : reported
+    }
+
+    /// The packs Apple's Translate app offered on iOS 26, shown before
+    /// LanguageDiscovery has reported the device's own list.
+    static let fallbackTranslationDictionaryLanguages: [SupportedLanguage] = [
         .arabic, .chineseSimplified, .chineseTraditional, .dutch, .english,
         .french, .hindi, .indonesian, .italian, .korean, .polish, .portuguese,
         .russian, .spanish, .thai, .turkish, .ukrainian, .vietnamese
@@ -430,8 +468,68 @@ enum CustomLanguageStore {
     }
 }
 
-private extension SupportedLanguage {
-    init(customRawValue: String) {
+/// Languages iOS supports that aren't built in, found by LanguageDiscovery
+/// (see SupportedLanguage). Add-only: a language Apple stops reporting
+/// stays listed so Samples and terms tagged with it keep a valid language.
+/// New ones are never turned on automatically — they appear switched off in
+/// Settings' "Languages shown on import".
+enum DiscoveredLanguageStore {
+    static let prefix = "apple:"
+    private static let defaultsKey = "discoveredLanguagesJSON"
+    private static let packsKey = "dictionaryPackLanguageRawValues"
+
+    struct Record: Codable, Equatable {
+        let rawValue: String
+        let localeIdentifier: String
+        let name: String
+    }
+
+    static func records() -> [Record] {
+        guard
+            let data = UserDefaults.standard.data(forKey: defaultsKey),
+            let records = try? JSONDecoder().decode([Record].self, from: data)
+        else { return [] }
+        return records
+    }
+
+    static func load() -> [SupportedLanguage] {
+        records().map { SupportedLanguage(customRawValue: $0.rawValue) }
+    }
+
+    static func record(forRawValue rawValue: String) -> Record? {
+        guard rawValue.hasPrefix(prefix) else { return nil }
+        return records().first(where: { $0.rawValue == rawValue })
+    }
+
+    /// Appends any records not already stored; returns whether anything
+    /// was added.
+    @discardableResult
+    static func add(_ new: [Record]) -> Bool {
+        var all = records()
+        let known = Set(all.map(\.rawValue))
+        let additions = new.filter { !known.contains($0.rawValue) }
+        guard !additions.isEmpty else { return false }
+        all += additions
+        if let data = try? JSONEncoder().encode(all) {
+            UserDefaults.standard.set(data, forKey: defaultsKey)
+        }
+        return true
+    }
+
+    static func dictionaryPackLanguages() -> [SupportedLanguage] {
+        (UserDefaults.standard.stringArray(forKey: packsKey) ?? []).compactMap(SupportedLanguage.init(rawValue:))
+    }
+
+    static func setDictionaryPackLanguages(_ languages: [SupportedLanguage]) {
+        let raw = languages.map(\.rawValue)
+        guard raw != UserDefaults.standard.stringArray(forKey: packsKey) else { return }
+        UserDefaults.standard.set(raw, forKey: packsKey)
+    }
+}
+
+extension SupportedLanguage {
+    /// For DiscoveredLanguageStore and CustomLanguageStore only.
+    fileprivate init(customRawValue: String) {
         self.rawValue = customRawValue
     }
 }

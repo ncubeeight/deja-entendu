@@ -8,6 +8,14 @@ struct DejaEntenduApp: App {
         WindowGroup {
             HomeView()
                 .preferredColorScheme(AppColorScheme(rawValue: colorSchemeRaw)?.colorScheme)
+                .task {
+                    // Pick up any languages Apple has added support for
+                    // since last launch. Off the main actor: the Vision
+                    // query is synchronous.
+                    await Task.detached(priority: .utility) {
+                        await LanguageDiscovery.refresh()
+                    }.value
+                }
         }
     }
 }
