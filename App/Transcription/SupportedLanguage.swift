@@ -61,6 +61,12 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
     static let estonian = SupportedLanguage(builtIn: "estonian")
     static let polish = SupportedLanguage(builtIn: "polish")
     static let arabic = SupportedLanguage(builtIn: "arabic")
+    /// Built in because NavajoKit (see NavajoSupport) supplies word meanings
+    /// and read-aloud that no Apple framework offers. Keeps the raw value
+    /// "Other language…" → "Navajo" used to create, so Samples and terms
+    /// already tagged Navajo stay tagged. Still counts as `isCustom` — Apple
+    /// has no speech, photo-text or model support for it.
+    static let navajo = SupportedLanguage(builtIn: "custom:navajo")
 
     static let builtIns: [SupportedLanguage] = [
         .chineseTraditional,
@@ -105,7 +111,8 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
         .finnish,
         .estonian,
         .polish,
-        .arabic
+        .arabic,
+        .navajo
     ]
 
     /// Built-in languages plus any the user added by connecting a
@@ -378,6 +385,7 @@ struct SupportedLanguage: Hashable, Sendable, Codable, CaseIterable {
         case .estonian: "Estonian"
         case .polish: "Polish"
         case .arabic: "Arabic"
+        case .navajo: "Navajo"
         default:
             DiscoveredLanguageStore.record(forRawValue: rawValue)?.name
                 ?? CustomLanguageStore.name(forRawValue: rawValue)
@@ -441,8 +449,13 @@ enum CustomLanguageStore {
         return records
     }
 
+    /// Skips records that are now built in (Navajo, added this way before
+    /// it was built in) so they aren't listed twice.
     static func load() -> [SupportedLanguage] {
-        records().map { SupportedLanguage(customRawValue: $0.rawValue) }
+        let builtIn = Set(SupportedLanguage.builtIns.map(\.rawValue))
+        return records()
+            .filter { !builtIn.contains($0.rawValue) }
+            .map { SupportedLanguage(customRawValue: $0.rawValue) }
     }
 
     static func name(forRawValue rawValue: String) -> String? {

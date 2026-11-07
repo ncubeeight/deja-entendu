@@ -7,13 +7,14 @@ import NavajoKit
 /// framework covers Navajo, so for the user's custom "Navajo" language this
 /// supplies what Apple can't:
 /// - word meanings from NavajoKit's lexicon, picked by its part-of-speech
-///   tagger (the tooltip on a word in a Sample, and flashcards), and
+///   tagger (the tooltip on a word in a Sample), and
 /// - read-aloud, by spelling each syllable in IPA for an English voice.
 /// Word chips need nothing extra — Apple's word tokenizer already splits
 /// Navajo correctly, glottal stops included.
 enum NavajoSupport {
     static func isNavajo(_ language: SupportedLanguage?) -> Bool {
         guard let language, language.isCustom else { return false }
+        if language == .navajo { return true }
         let folded = language.displayName
             .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
             .filter(\.isLetter)
