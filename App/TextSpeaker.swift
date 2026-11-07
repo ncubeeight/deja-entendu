@@ -8,6 +8,9 @@ import Observation
 final class TextSpeaker: NSObject, AVSpeechSynthesizerDelegate {
     private let synthesizer = AVSpeechSynthesizer()
     private(set) var isSpeaking = false
+    /// Bumped on every speak/stop so a Navajo request whose pronunciation
+    /// is still being prepared doesn't start after the user moved on.
+    private var requestID = 0
 
     override init() {
         super.init()
@@ -25,6 +28,7 @@ final class TextSpeaker: NSObject, AVSpeechSynthesizerDelegate {
     /// returns nil gracefully for an unsupported locale instead of crashing.
     static func isVoiceAvailable(for language: SupportedLanguage?) -> Bool {
         guard let language else { return true }
+        if NavajoSupport.isNavajo(language) { return true }
         return AVSpeechSynthesisVoice(language: language.locale.identifier) != nil
     }
 
@@ -37,6 +41,24 @@ final class TextSpeaker: NSObject, AVSpeechSynthesizerDelegate {
         try? AVAudioSession.sharedInstance().setActive(true)
 
         synthesizer.stopSpeaking(at: .immediate)
+        requestID += 1
+
+        // No Apple voice speaks Navajo: NavajoKit spells each syllable in
+        // IPA, which an English voice then pronounces.
+        if NavajoSupport.isNavajo(language) {
+            let request = requestID
+            isSpeaking = true
+            Task { @MainActor in
+                let pronunciation = await NavajoSupport.pronunciation(for: text)
+                guard request == self.requestID else { return }
+                let utterance = AVSpeechUtterance(attributedString: pronunciation)
+                utterance.voice = AVSpeechSynthesisVoice(language: NavajoSupport.voiceLanguage)
+                utterance.rate = SpeechPace.current.utteranceRate
+                self.synthesizer.speak(utterance)
+            }
+            return
+        }
+
         let utterance = AVSpeechUtterance(string: text)
         if let language {
             utterance.voice = AVSpeechSynthesisVoice(language: language.locale.identifier)
@@ -47,6 +69,7 @@ final class TextSpeaker: NSObject, AVSpeechSynthesizerDelegate {
     }
 
     func stop() {
+        requestID += 1
         synthesizer.stopSpeaking(at: .immediate)
         isSpeaking = false
     }

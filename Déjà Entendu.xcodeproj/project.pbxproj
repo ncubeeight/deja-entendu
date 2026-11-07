@@ -29,6 +29,8 @@
 		6EB07C5380A14687F7E46655 /* ImportedTextSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = F585D65415D0CE0E02AF4217 /* ImportedTextSample.swift */; };
 		75CCB407447E900359D8053E /* PinyinConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 545CED820912E84C60D93AEA /* PinyinConverter.swift */; };
 		77797AD12F21257B3216CC57 /* SpeechTranscriberService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E654C219D0CE7AF3C28A4DB /* SpeechTranscriberService.swift */; };
+		D15C0E7A1B2C3D4E5F600012 /* NavajoKit in Frameworks */ = {isa = PBXBuildFile; productRef = D15C0E7A1B2C3D4E5F600011 /* NavajoKit */; };
+		D15C0E7A1B2C3D4E5F600015 /* NavajoSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = D15C0E7A1B2C3D4E5F600014 /* NavajoSupport.swift */; };
 		D15C0E7A1B2C3D4E5F600002 /* LanguageDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = D15C0E7A1B2C3D4E5F600001 /* LanguageDiscovery.swift */; };
 		8BF0D6D13DE6DE67344DBB05 /* DejaEntenduApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B99D0191D8A4292C6A7D00F /* DejaEntenduApp.swift */; };
 		916620EA4DD1CB2BA40582D4 /* ImportedImageSampleStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 489F630F10CCC1FCD7D72003 /* ImportedImageSampleStore.swift */; };
@@ -90,6 +92,7 @@
 		1B3BF8F0E9050EE05E44893D /* AnySample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnySample.swift; sourceTree = "<group>"; };
 		241C2FC09591C0730AA0EF55 /* VocabularyEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VocabularyEntry.swift; sourceTree = "<group>"; };
 		2E654C219D0CE7AF3C28A4DB /* SpeechTranscriberService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechTranscriberService.swift; sourceTree = "<group>"; };
+		D15C0E7A1B2C3D4E5F600014 /* NavajoSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavajoSupport.swift; sourceTree = "<group>"; };
 		D15C0E7A1B2C3D4E5F600001 /* LanguageDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageDiscovery.swift; sourceTree = "<group>"; };
 		31C9B7C7306890A74F4BEA9D /* StudyNoteGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyNoteGenerator.swift; sourceTree = "<group>"; };
 		36497FF3E478215B6B0196F9 /* WordGlossGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordGlossGenerator.swift; sourceTree = "<group>"; };
@@ -141,6 +144,17 @@
 		FD6D200A8D247A5D5469DE2F /* AddVocabularyWordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddVocabularyWordView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFrameworksBuildPhase section */
+		D15C0E7A1B2C3D4E5F600013 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D15C0E7A1B2C3D4E5F600012 /* NavajoKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
 /* Begin PBXGroup section */
 		0A7B8DB21E3425D906E28378 /* StudyNotes */ = {
 			isa = PBXGroup;
@@ -176,6 +190,7 @@
 			children = (
 				4436C189F27EDA7AD4F93AFB /* AudioTranscoder.swift */,
 				D15C0E7A1B2C3D4E5F600001 /* LanguageDiscovery.swift */,
+				D15C0E7A1B2C3D4E5F600014 /* NavajoSupport.swift */,
 				2E654C219D0CE7AF3C28A4DB /* SpeechTranscriberService.swift */,
 				4B853B1C7C82C455A6977DCE /* SupportedLanguage.swift */,
 			);
@@ -308,6 +323,7 @@
 			buildConfigurationList = BDEB2BB9BB3B6D4F3DD03BC3 /* Build configuration list for PBXNativeTarget "Déjà Entendu" */;
 			buildPhases = (
 				C595D1D816C1A8CAE95F4D64 /* Sources */,
+				D15C0E7A1B2C3D4E5F600013 /* Frameworks */,
 				76ED2E53845A065174C4DC1C /* Resources */,
 				F74F04CB13C1F74285FF209C /* Embed Foundation Extensions */,
 			);
@@ -318,6 +334,7 @@
 			);
 			name = "Déjà Entendu";
 			packageProductDependencies = (
+				D15C0E7A1B2C3D4E5F600011 /* NavajoKit */,
 			);
 			productName = "Déjà Entendu";
 			productReference = DEBD979638F7AC9B972B5E15 /* Déjà Entendu.app */;
@@ -351,6 +368,9 @@
 			);
 			mainGroup = 0B1CB2108EA771F4C302F24A;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D15C0E7A1B2C3D4E5F600010 /* XCRemoteSwiftPackageReference "navajokit-new" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E0CFA76A821E5728085810B4 /* Products */;
 			projectDirPath = "";
@@ -415,6 +435,7 @@
 				F9A9E6B14BAFDA3DDB9061C3 /* SharedContainer.swift in Sources */,
 				77797AD12F21257B3216CC57 /* SpeechTranscriberService.swift in Sources */,
 				D15C0E7A1B2C3D4E5F600002 /* LanguageDiscovery.swift in Sources */,
+				D15C0E7A1B2C3D4E5F600015 /* NavajoSupport.swift in Sources */,
 				4A9D006ABCFD3DA1463D0AF2 /* StudyNoteGenerator.swift in Sources */,
 				60BED0A232FDDCD645DE9000 /* SupportedLanguage.swift in Sources */,
 				649C6805328AF662B06D3AAE /* TextImportView.swift in Sources */,
@@ -693,6 +714,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D15C0E7A1B2C3D4E5F600010 /* XCRemoteSwiftPackageReference "navajokit-new" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ncubeeight/navajokit-new";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D15C0E7A1B2C3D4E5F600011 /* NavajoKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D15C0E7A1B2C3D4E5F600010 /* XCRemoteSwiftPackageReference "navajokit-new" */;
+			productName = NavajoKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 8412541A4187DCDE118FD657 /* Project object */;
 }

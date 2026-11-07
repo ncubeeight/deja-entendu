@@ -1,0 +1,15 @@
+{
+  "originHash" : "93abad32b2cd5485cc4f5a1218022ef1782daee10b8eb1cb27b19fb2d44116b5",
+  "pins" : [
+    {
+      "identity" : "navajokit-new",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ncubeeight/navajokit-new",
+      "state" : {
+        "branch" : "main",
+        "revision" : "a6d37ce1323f68f58f0c8045e8ccb3a038e2a90d"
+      }
+    }
+  ],
+  "version" : 3
+}

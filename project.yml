@@ -23,6 +23,11 @@ options:
     iOS: "26.0"
   developmentLanguage: en
 
+packages:
+  NavajoKit:
+    url: https://github.com/ncubeeight/navajokit-new
+    branch: main
+
 settingGroups:
   signing:
     CODE_SIGN_STYLE: Automatic
@@ -73,6 +78,7 @@ targets:
     dependencies:
       - target: AddToDejaEntendu
         embed: true
+      - package: NavajoKit
 
   AddToDejaEntendu:
     type: app-extension

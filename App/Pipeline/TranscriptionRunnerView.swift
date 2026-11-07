@@ -440,6 +440,10 @@ private struct TranscriptWordToken: View {
     }
 
     private func loadGloss() async {
+        if NavajoSupport.isNavajo(language), let gloss = await NavajoSupport.gloss(forWord: word) {
+            glossState = .ready(gloss)
+            return
+        }
         do {
             let gloss = try await WordGlossGenerator.gloss(forWord: word, language: language)
             glossState = .ready(gloss)
