@@ -24,7 +24,14 @@ enum AnySample: Identifiable, Hashable {
         }
     }
 
+    /// The user's own name for this sample (see SampleTitleStore), or the
+    /// default one.
     var title: String {
+        SampleTitleStore.title(for: id) ?? defaultTitle
+    }
+
+    /// The name a sample gets before the user renames it.
+    var defaultTitle: String {
         switch self {
         case .audio(let recording): recording.displayTitle
         case .text(let sample): sample.title
@@ -64,9 +71,41 @@ enum AnySample: Identifiable, Hashable {
         case .audio(let recording):
             .audio(recording)
         case .text(let sample):
-            .readyText(title: sample.title, text: sample.body, language: sample.language)
+            .readyText(title: defaultTitle, text: sample.body, language: sample.language)
         case .image(let sample):
-            .readyText(title: sample.originalFilename, text: sample.recognizedText, language: sample.language)
+            .readyText(title: defaultTitle, text: sample.recognizedText, language: sample.language)
+        }
+    }
+}
+
+/// Names the user gave their samples, keyed by sample id. Kept apart from
+/// the three sample stores so renaming needs no change to their saved
+/// formats (or to the Share Extension, which writes them too). Views that
+/// show titles watch `key` with @AppStorage so a rename shows up at once.
+enum SampleTitleStore {
+    static let key = "sampleCustomTitlesJSON"
+
+    static func load(from json: String? = UserDefaults.standard.string(forKey: key)) -> [UUID: String] {
+        guard let data = json?.data(using: .utf8),
+              let decoded = try? JSONDecoder().decode([String: String].self, from: data)
+        else { return [:] }
+        return Dictionary(uniqueKeysWithValues: decoded.compactMap { key, value in
+            UUID(uuidString: key).map { ($0, value) }
+        })
+    }
+
+    static func title(for id: UUID) -> String? {
+        load()[id]
+    }
+
+    /// Saves a new name; an empty one goes back to the default title.
+    static func setTitle(_ title: String?, for id: UUID) {
+        var titles = load()
+        let trimmed = title?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        titles[id] = trimmed.isEmpty ? nil : trimmed
+        let encoded = Dictionary(uniqueKeysWithValues: titles.map { ($0.key.uuidString, $0.value) })
+        if let data = try? JSONEncoder().encode(encoded), let json = String(data: data, encoding: .utf8) {
+            UserDefaults.standard.set(json, forKey: key)
         }
     }
 }

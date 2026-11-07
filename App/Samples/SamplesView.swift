@@ -47,6 +47,9 @@ struct SamplesView: View {
     @State private var isRecognizingSharedImages = false
 
     @AppStorage(AppSettings.enabledLanguagesKey) private var enabledLanguagesRaw: String = ""
+    // Read so a rename on a Sample's page redraws the list (and re-sorts
+    // by title) right away.
+    @AppStorage(SampleTitleStore.key) private var customTitlesJSON: String = ""
 
     private var enabledLanguages: [SupportedLanguage] {
         let enabled = AppSettings.languages(from: enabledLanguagesRaw)
@@ -135,6 +138,9 @@ struct SamplesView: View {
     }
 
     var body: some View {
+        // Titles come from SampleTitleStore; reading this here redraws the
+        // rows when a Sample is renamed.
+        let _ = customTitlesJSON
         NavigationStack {
             // The segmented filter used to float above the list via
             // .safeAreaInset — it now lives in the List's own section
@@ -185,7 +191,7 @@ struct SamplesView: View {
             }
             .navigationTitle("Samples")
             .navigationDestination(for: AnySample.self) { sample in
-                TranscriptionRunnerView(input: sample.runnerInput)
+                TranscriptionRunnerView(input: sample.runnerInput, sampleID: sample.id)
             }
             .toolbar {
                 if filter == .all {
@@ -348,6 +354,7 @@ struct SamplesView: View {
                 try? FileManager.default.removeItem(at: imageSample.localURL)
                 ImportedImageSampleStore.save(imageSamples)
             }
+            SampleTitleStore.setTitle(nil, for: sample.id)
         }
     }
 

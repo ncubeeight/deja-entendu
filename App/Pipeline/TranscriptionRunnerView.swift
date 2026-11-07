@@ -31,6 +31,18 @@ enum SampleInput {
 /// automatic romanization.
 struct TranscriptionRunnerView: View {
     let input: SampleInput
+    /// The saved sample this page shows, so it can be renamed. Nil for a
+    /// page with nothing saved behind it.
+    var sampleID: UUID? = nil
+
+    @AppStorage(SampleTitleStore.key) private var customTitlesJSON: String = ""
+    @State private var isRenamePresented = false
+    @State private var renameDraft = ""
+
+    /// The user's name for the sample if they gave one, else the default.
+    private var title: String {
+        sampleID.flatMap { SampleTitleStore.load(from: customTitlesJSON)[$0] } ?? input.title
+    }
 
     @State private var status: Status = .idle
     @State private var flashcardEntry: VocabularyEntry?
@@ -72,7 +84,7 @@ struct TranscriptionRunnerView: View {
 
                     case .transcribed(let result):
                         transcriptBlock(result: result)
-                            .selectionContextMenu(preview: result.fullText, title: input.title, onSelect: enterSelection)
+                            .selectionContextMenu(preview: result.fullText, title: title, onSelect: enterSelection)
                         ProgressView("Generating study notes…")
 
                     case .notesReady(let result, let notes):
@@ -80,11 +92,11 @@ struct TranscriptionRunnerView: View {
                             transcriptBlock(result: result)
                             studyNotesBlock(notes)
                         }
-                        .selectionContextMenu(preview: result.fullText, title: input.title, onSelect: enterSelection)
+                        .selectionContextMenu(preview: result.fullText, title: title, onSelect: enterSelection)
 
                     case .notesUnavailable(let result, let reason):
                         transcriptBlock(result: result)
-                            .selectionContextMenu(preview: result.fullText, title: input.title, onSelect: enterSelection)
+                            .selectionContextMenu(preview: result.fullText, title: title, onSelect: enterSelection)
                         Text("Study notes unavailable: \(reason)")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
@@ -97,16 +109,38 @@ struct TranscriptionRunnerView: View {
             }
             .padding()
         }
-        .navigationTitle(input.title)
+        .navigationTitle(title)
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            if sampleID != nil {
+                // The title with a pencil beside it, so someone with dozens
+                // of "Scanned Photo" samples can give each a memorable name.
+                ToolbarItem(placement: .principal) {
+                    Button {
+                        renameDraft = title
+                        isRenamePresented = true
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text(title)
+                                .font(.headline)
+                                .lineLimit(1)
+                            Image(systemName: "pencil")
+                                .font(.subheadline)
+                                .foregroundStyle(.tint)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("\(title). Rename Sample")
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 // Mail, Messages, Notes, Files, etc. all come from the
                 // system share sheet; subject is what Mail uses as the
                 // subject line.
                 ShareLink(
                     item: shareText,
-                    subject: Text(input.title),
-                    preview: SharePreview(input.title)
+                    subject: Text(title),
+                    preview: SharePreview(title)
                 ) {
                     Image(systemName: "square.and.arrow.up")
                 }
@@ -121,6 +155,20 @@ struct TranscriptionRunnerView: View {
         }
         .navigationDestination(item: $flashcardEntry) { entry in
             VocabularyFlashcardView(entry: entry)
+        }
+        .alert("Rename Sample", isPresented: $isRenamePresented) {
+            TextField("Name", text: $renameDraft)
+            Button("Save") {
+                if let sampleID {
+                    // Saving the default name (or nothing) clears the custom one.
+                    let name = renameDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+                    SampleTitleStore.setTitle(name == input.title ? nil : name, for: sampleID)
+                    customTitlesJSON = UserDefaults.standard.string(forKey: SampleTitleStore.key) ?? ""
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Leave it empty to go back to \"\(input.title)\".")
         }
         .task { await runPipeline() }
         .onDisappear { speaker.stop() }
@@ -160,7 +208,7 @@ struct TranscriptionRunnerView: View {
     }
 
     private var shareText: String {
-        let header = "\(input.title)\nLanguage: \(input.language.displayName)"
+        let header = "\(title)\nLanguage: \(input.language.displayName)"
         let body = exportSections.map { "\($0.heading)\n\($0.body)" }
         return ([header] + body).joined(separator: "\n\n")
     }

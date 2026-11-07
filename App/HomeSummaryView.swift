@@ -24,6 +24,8 @@ struct HomeSummaryView: View {
     // the updated value and gets the compact banner.
     @State private var showFullHeader: Bool
     @AppStorage(AppSettings.hasCompletedFirstHomeLaunchKey) private var hasCompletedFirstLaunch = false
+    // Read so a renamed Sample shows its new title here right away.
+    @AppStorage(SampleTitleStore.key) private var customTitlesJSON: String = ""
 
     init(selectedTab: Binding<Int>) {
         self._selectedTab = selectedTab
@@ -56,6 +58,9 @@ struct HomeSummaryView: View {
     ]
 
     var body: some View {
+        // Titles come from SampleTitleStore; reading this here redraws the
+        // rows when a Sample is renamed.
+        let _ = customTitlesJSON
         NavigationStack {
             ScrollView {
                 VStack(spacing: 28) {
@@ -77,7 +82,7 @@ struct HomeSummaryView: View {
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: AnySample.self) { sample in
-                TranscriptionRunnerView(input: sample.runnerInput)
+                TranscriptionRunnerView(input: sample.runnerInput, sampleID: sample.id)
             }
             .navigationDestination(for: VocabularyEntry.self) { entry in
                 VocabularyFlashcardView(entry: entry)
