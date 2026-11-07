@@ -46,14 +46,22 @@ struct TextImportView: View {
                     Text("Paste or type a passage in the language you're studying.")
                 }
 
-                Picker("Language", selection: $language) {
-                    ForEach(enabledLanguages, id: \.self) { language in
-                        Text(language.displayName).tag(language)
+                Section {
+                    Picker("Language", selection: $language) {
+                        ForEach(enabledLanguages, id: \.self) { language in
+                            Text(language.displayName).tag(language)
+                        }
                     }
+                    ManageLanguagesLink()
                 }
             }
             .onAppear {
                 language = AppSettings.preferredDefaultLanguage(enabledLanguages: enabledLanguages)
+            }
+            .onChange(of: enabledLanguagesRaw) {
+                if !enabledLanguages.contains(language) {
+                    language = AppSettings.preferredDefaultLanguage(enabledLanguages: enabledLanguages)
+                }
             }
             .navigationTitle("Add Text")
             .navigationBarTitleDisplayMode(.inline)

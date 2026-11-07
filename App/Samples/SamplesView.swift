@@ -282,6 +282,15 @@ struct SamplesView: View {
                     presentTextSampleLanguageSheet()
                 }
             }
+            .onChange(of: enabledLanguagesRaw) {
+                // A language turned off from a picker's "Add or Remove
+                // Languages" screen can't stay selected underneath it.
+                let fallback = AppSettings.preferredDefaultLanguage(enabledLanguages: enabledLanguages)
+                if !enabledLanguages.contains(pendingLanguage) { pendingLanguage = fallback }
+                if !enabledLanguages.contains(pendingGenerateLanguage) { pendingGenerateLanguage = fallback }
+                if !enabledLanguages.contains(pendingRecordLanguage) { pendingRecordLanguage = fallback }
+                if !enabledLanguages.contains(pendingTextSampleLanguage) { pendingTextSampleLanguage = fallback }
+            }
             .alert("Import failed", isPresented: .constant(importError != nil), actions: {
                 Button("OK") { importError = nil }
             }, message: {
@@ -359,6 +368,9 @@ struct SamplesView: View {
                     Text("Picking the right language up front means transcription runs in that language from the start.")
                 }
             }
+            .safeAreaInset(edge: .bottom) {
+                ManageLanguagesBar()
+            }
             .navigationTitle("Choose Language")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -385,7 +397,7 @@ struct SamplesView: View {
                 }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
     }
 
     private func presentLanguageSheet() {
@@ -410,6 +422,9 @@ struct SamplesView: View {
                     Text("A short, simple practice paragraph will be generated on-device — no recording or file needed.")
                 }
             }
+            .safeAreaInset(edge: .bottom) {
+                ManageLanguagesBar()
+            }
             .navigationTitle("Choose Language")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -424,7 +439,7 @@ struct SamplesView: View {
                 }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
     }
 
     private func presentGenerateLanguageSheet() {
@@ -447,6 +462,9 @@ struct SamplesView: View {
                     Text("What language will you be speaking?")
                 }
             }
+            .safeAreaInset(edge: .bottom) {
+                ManageLanguagesBar()
+            }
             .navigationTitle("Choose Language")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -461,7 +479,7 @@ struct SamplesView: View {
                 }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
     }
 
     @ViewBuilder
@@ -484,6 +502,9 @@ struct SamplesView: View {
                          ? "Text extracted from a shared PDF — picking the right language means it's tagged correctly from the start."
                          : "Text in a shared photo is read in the language you pick, so choosing the right one matters most for non-Latin scripts.")
                 }
+            }
+            .safeAreaInset(edge: .bottom) {
+                ManageLanguagesBar()
             }
             .navigationTitle("Choose Language")
             .navigationBarTitleDisplayMode(.inline)
@@ -509,7 +530,7 @@ struct SamplesView: View {
                 }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
     }
 
     /// OCR is slow enough on a full-resolution photo to hitch the UI, so it

@@ -25,12 +25,15 @@ struct ImageImportView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Picker("Language", selection: $language) {
-                    ForEach(enabledLanguages, id: \.self) { language in
-                        Text(language.displayName).tag(language)
+                Section {
+                    Picker("Language", selection: $language) {
+                        ForEach(enabledLanguages, id: \.self) { language in
+                            Text(language.displayName).tag(language)
+                        }
                     }
+                    .disabled(ingestedSample != nil)
+                    ManageLanguagesLink()
                 }
-                .disabled(ingestedSample != nil)
 
                 Section {
                     PhotosPicker(selection: $pickerItem, matching: .images) {
@@ -58,6 +61,11 @@ struct ImageImportView: View {
             }
             .onAppear {
                 language = AppSettings.preferredDefaultLanguage(enabledLanguages: enabledLanguages)
+            }
+            .onChange(of: enabledLanguagesRaw) {
+                if !enabledLanguages.contains(language) {
+                    language = AppSettings.preferredDefaultLanguage(enabledLanguages: enabledLanguages)
+                }
             }
             .onChange(of: pickerItem) { _, newValue in
                 guard let newValue else { return }
