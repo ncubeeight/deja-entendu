@@ -14,6 +14,7 @@ struct VocabularyFlashcardView: View {
     /// Looked up once per card in .task rather than computed in body —
     /// see GlossaryStore.definition(forTerm:language:).
     @State private var customDefinition: String?
+    @State private var isRegeneratingPronunciation = false
 
     private enum Status {
         case loading
@@ -146,10 +147,7 @@ struct VocabularyFlashcardView: View {
     @ViewBuilder
     private func detailsBlock(_ details: FlashcardDetails) -> some View {
         VStack(alignment: .leading, spacing: 20) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Pronunciation").font(.caption).foregroundStyle(.secondary)
-                Text(details.pronunciation).font(.title3)
-            }
+            pronunciationBlock(details)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text("Translation").font(.caption).foregroundStyle(.secondary)
@@ -180,6 +178,72 @@ struct VocabularyFlashcardView: View {
             Label("On-device", systemImage: "sparkles")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
+        }
+    }
+
+    /// Computed here rather than read from the saved entry, so cards saved
+    /// before this change are corrected too:
+    /// - Japanese and Mandarin: a reading from Apple's linguistic data.
+    /// - Other non-Latin scripts with a reliable romanization (Korean,
+    ///   Russian, Greek, Hindi, …): that romanization. The on-device model's
+    ///   guesses for these were wrong more often than not.
+    /// - Everything else: the model's spelled-out guess, marked approximate,
+    ///   with a button to ask for another.
+    @ViewBuilder
+    private func pronunciationBlock(_ details: FlashcardDetails) -> some View {
+        let exact = PronunciationGuide.exact(for: entry.text, language: entry.language)
+        let romanization = PronunciationGuide.romanization(for: entry.text, language: entry.language)
+
+        VStack(alignment: .leading, spacing: 4) {
+            if let exact {
+                Text("Pronunciation").font(.caption).foregroundStyle(.secondary)
+                Text(exact).font(.title3)
+            } else if let romanization {
+                Text("Romanization").font(.caption).foregroundStyle(.secondary)
+                Text(romanization).font(.title3)
+                Text("Letter by letter, as written. Sounds can change in speech, so the speaker button is the reference.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            } else {
+                HStack(spacing: 6) {
+                    Text("Pronunciation · approximate")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    if isRegeneratingPronunciation {
+                        ProgressView().controlSize(.mini)
+                    } else {
+                        Button {
+                            Task { await regeneratePronunciation() }
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.caption)
+                        }
+                        .accessibilityLabel("Try another pronunciation guide")
+                    }
+                }
+                Text(PronunciationGuide.cleaned(details.pronunciation)).font(.title3)
+                Text("A spelled-out guess. The speaker button plays the real pronunciation.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func regeneratePronunciation() async {
+        guard case .ready(var details) = status else { return }
+        isRegeneratingPronunciation = true
+        defer { isRegeneratingPronunciation = false }
+        guard let pronunciation = try? await FlashcardGenerator.regeneratePronunciation(
+            forTerm: entry.text,
+            language: entry.language
+        ) else { return }
+
+        details.pronunciation = pronunciation
+        status = .ready(details)
+        var entries = VocabularyStore.load()
+        if let index = entries.firstIndex(where: { $0.id == entry.id }) {
+            entries[index].pronunciation = pronunciation
+            VocabularyStore.save(entries)
         }
     }
 
