@@ -152,8 +152,8 @@ enum PronunciationGuide {
         return Locale(identifier: "en").localizedString(forRegionCode: region)
     }
 
-    /// Instructions shared by full flashcard generation and regenerating
-    /// just the guide.
+    /// Pronunciation instructions for flashcard generation. The guide it
+    /// produces is saved but not shown for now (see VocabularyFlashcardView).
     static func modelInstructions(for language: SupportedLanguage) -> String {
         var text = """
         The pronunciation guide must cover the term's full length, every \
@@ -178,43 +178,7 @@ enum PronunciationGuide {
     }
 }
 
-@Generable
-struct PronunciationOnly {
-    @Guide(description: """
-    A simple phonetic pronunciation guide using plain English spelling, not \
-    IPA. It must sound out the term's ENTIRE original text from first \
-    syllable to last — never a truncated stem, prefix, or shortened form. \
-    Every syllable of the original term must be represented, and the \
-    stressed syllable written in capitals.
-    """)
-    var pronunciation: String
-}
-
 enum FlashcardGenerator {
-
-    /// A fresh guide for one term — for the flashcard's "try again" button
-    /// when a saved guide doesn't match the audio.
-    static func regeneratePronunciation(forTerm term: String, language: SupportedLanguage?) async throws -> String {
-        if let exact = PronunciationGuide.exact(for: term, language: language) {
-            return exact
-        }
-        let model = SystemLanguageModel.default
-        if case .unavailable(let reason) = model.availability {
-            throw FlashcardError.modelUnavailable(String(describing: reason))
-        }
-        var instructions = "You write pronunciation guides for language learners."
-        if let language {
-            instructions += " The term is in \(language.displayName) — treat that as certain. "
-                + PronunciationGuide.modelInstructions(for: language)
-        }
-        let session = LanguageModelSession(model: model, instructions: instructions)
-        let response = try await session.respond(
-            to: "Term: \(term)",
-            generating: PronunciationOnly.self,
-            options: GenerationOptions(maximumResponseTokens: 80)
-        )
-        return PronunciationGuide.cleaned(response.content.pronunciation)
-    }
 
     /// When the entry came from a tapped transcript word, `language` is
     /// already known from the recording it was tagged with — pass it so the
